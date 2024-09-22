@@ -1,0 +1,46 @@
+﻿.toa-nha{
+    width:300px;
+    height:200px;
+    position:relative;
+}
+#a7 {
+    left: 3px;
+    top: 9px;
+}
+#a8 {
+    left: 370px;
+    top: -192px;
+}
+#a9 {
+    left: 3px;
+    top: -229px;
+}
+#a10 {
+    left: 370px;
+    top: -430px;
+}
+#a16 {
+    left: 720px;
+    top: -793px;
+}
+
+.phong-hoc {
+    text-align: center;
+}
+.phong-hoc:hover{
+    background-color:yellow;
+}
+
+    .phong-hoc.hoc {
+        background-color: dodgerblue;
+    }
+    .phong-hoc.free {
+        /*background-color: gray;*/
+    }
+    .phong-hoc.fix {
+        background-color: red;
+    }
+
+    .no-display{
+        display:none;
+    }

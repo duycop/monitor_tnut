@@ -1,0 +1,4 @@
+﻿những gì sẽ thiết kế cho csdl tôi sẽ gõ trước vào đây
+sau đó làm trên phần mềm SQL Managerment Studio
+rồi xuất ra file .sql, 
+kéo vào thư mục này để lưu trữ

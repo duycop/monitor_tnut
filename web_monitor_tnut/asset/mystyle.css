@@ -1,0 +1,67 @@
+﻿body {
+}
+
+.sodo-tnut {
+    /*Hiển thị cái ảnh sơ đồ tnut vào đây*/
+    width: 720px;
+    height: 1008px;
+    background-image: url('/images/tnut_sodo.png');
+}
+
+.toa-nha {
+    width: 129px;
+    height: 44px;
+    position: relative;
+}
+
+#a7 {
+    background-image: url('/images/a7.png');
+    left: 448px;
+    top: 595px;
+}
+
+#a8 {
+    background-image: url('/images/a8.png');
+    left: 448px;
+    top: 493px;
+}
+
+#a9 {
+    background-image: url('/images/a9.png');
+    height: 77px !important;
+    left: 448px;
+    top: 324px;
+}
+
+#a10 {
+    background-image: url('/images/a10.png');
+    left: 448px;
+    top: 186px;
+}
+
+#a16 {
+    background-image: url('/images/a16.png');
+    left: 228px;
+    top: -64px;
+}
+
+.phong-hoc{
+    text-align:center;
+}
+.phong-hoc:hover{
+    background-color:yellow;
+}
+
+    .phong-hoc.hoc {
+        background-color: dodgerblue;
+    }
+    .phong-hoc.free {
+        /*background-color: gray;*/
+    }
+    .phong-hoc.fix {
+        background-color: red;
+    }
+
+    .no-display{
+        display:none;
+    }
