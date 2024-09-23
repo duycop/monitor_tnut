@@ -56,7 +56,9 @@ cập nhật file css kết quả việc kéo thả:
 
 
 
+## Video kết quả:
 
+Video đã upload trên group telegram của lớp: [xem video](https://t.me/c/2461681536/50)
 
 
 
