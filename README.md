@@ -1,4 +1,4 @@
-# Monitor_TNUT
+# Monitor_TNUT : Lập trình web ui
 
 ## Thử làm bài tập 2 cùng 57kmt
 
@@ -32,33 +32,28 @@ cập nhật file css kết quả việc kéo thả:
 
 ![image](https://github.com/user-attachments/assets/75ed1521-3d06-4d7b-b979-dcb7f4506e11)
 
-2.3. mycode.js : vất vả nhất ở đây
+2.3. **mycode.js** : vất vả nhất ở đây
 
 - Đăng ký các sự kiện mà người dùng click vào thì sẽ làm gì.
 - Hiển thị hộp thoại: dùng $.confirm({...})  => tham khảo trang chủ của **jquery-confirm**
 - Gửi dữ liệu từ client lên server (api): dùng **$.post(api,{json_key:json_value,...},function(json){code here},'json');**
 - vừa làm vừa xem kết quả để hiệu chỉnh
 
-2.4. api.aspx: xoá các dòng ở asp.aspx trừ dòng 1, code ở api.aspx.cs tại sự kiện Page_Load() :
+2.4. **api.aspx**: xoá các dòng ở asp.aspx trừ dòng 1, code ở api.aspx.cs tại sự kiện Page_Load() :
 
 ![image](https://github.com/user-attachments/assets/e1f74ef3-ef88-4289-b078-57bc8fa8e154)
 
-2.5 Tạo DLL để xử lý các hàm: 
+2.5 **Tạo DLL** để xử lý các hàm: 
  - tương tác với db - 
  - xem code file [lib_db/cls_sqlserver.cs](lib_db/cls_sqlserver.cs)
 
   ![image](https://github.com/user-attachments/assets/6a59f781-86e1-476a-a184-4bfb10f687a9)
 
 
-2.6. Dùng các hàm của DLL để giải quyết các hàm đã phân luồn tại **Page_Load switch(action)** :
+2.6. **Dùng DLL** để giải quyết các hàm đã phân luồn tại **Page_Load switch(action)** :
 
 ![image](https://github.com/user-attachments/assets/41ce3783-568b-4fbc-a334-e2fd52a2c2a2)
-
-
 
 ## Video kết quả:
 
 Video đã upload trên group telegram của lớp: [xem video](https://t.me/c/2461681536/50)
-
-
-
