@@ -1,5 +1,7 @@
-﻿$(function () {
+﻿$(function () {  //event Document Ready
 	'use strict';
+	var logined = false; //check việc đã login phía client
+	var user_info;
 	const api = '/api.aspx';
 	$(".toa-nha").draggable();
 	const TNUT = {
@@ -17,7 +19,7 @@
 	const TITLE = {
 		1: 'Trống',
 		2: 'Đang học',
-		3: 'Sửa chữa',
+		3: 'Đang sửa chữa nhé',
 	}
 	const MAP = {};
 	const THONG_KE = { 1: 0, 2: 0, 3: 0 };
@@ -43,7 +45,7 @@
 				var p = day_nha.id * 10000 + tang * 100 + phong;
 				var item = MAP[p];
 				var status = STATUS[item.status];
-				var title = 'Phòng' + item.name + ': ' + TITLE[item.status];
+				var title = 'Phòng ' + item.name + ': ' + TITLE[item.status];
 				html += `<td class="phong-hoc ${status}" id="p${p}" data-key="${p}" title="${title}">`;
 				html += (tang * 100 + phong);
 				html += '</td>';
@@ -53,6 +55,36 @@
 		$('#' + key).html(html);
 	}
 	function change_status(idPhong, status, callback) {
+		//phải logined ok thì mới đc change status of idPhòng
+		if (!logined) {
+			//thông báo: mày chưa login, ko đc thay đổi, có muốn login ko
+			//nếu có thì gọi hàm login() => show dialog nhập uid+pwd
+			$.alert({
+				title: "Báo lỗi",
+				content: "Muốn thay đổi trạng thái thì cần login?",
+				columnClass: 's',
+				closeIcon: true,
+				buttons: {
+
+					yes: {
+						text: 'Có login ngay',
+						btnClass: 'btn-primary',
+						keys: ['y', 'c'],
+						action: function () {
+							do_login();
+						}
+					},
+					close: {
+						text: 'Không',
+						btnClass: 'btn-danger',
+						keys: ['k', 'n'],
+						action: function () {
+						}
+					},
+				}
+			})
+			return;
+		}
 		$.post(api,
 			{
 				action: 'change_status',
@@ -67,10 +99,92 @@
 					thong_ke_lai();
 					callback(json);
 				} else {
-					//bao_loi()
+					logined = false;
+					$.alert({ title: 'Báo lỗi', content: json.msg });
 				}
 			},
 			'json');
+	}
+
+	function show_user(json) {
+		logined = true;
+		user_info = json;
+		//show info login thành công
+		$('#user-info').html('Welcome ' + json.name)
+		//hiện nút logout
+		$('.cmd-logout').removeClass('no-display');
+		//ẩn nút login
+		$('.cmd-login').addClass('no-display');
+	}
+	function do_login() {
+		//html có chứa login form
+		var html_login_form = `<form class="was-validated">
+  <div class="mb-3 mt-3">
+    <label for="uid" class="form-label">Username:</label>
+    <input type="text" class="form-control" id="uid" placeholder="Enter username" name="uname" required>
+    <div class="valid-feedback">OK rồi đấy.</div>
+    <div class="invalid-feedback">Please fill out this field.</div>
+  </div>
+  <div class="mb-3">
+    <label for="pwd" class="form-label">Password:</label>
+    <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd" required>
+    <div class="valid-feedback">Valid.</div>
+    <div class="invalid-feedback">Please fill out this field.</div>
+  </div>
+</form>`;
+		var login_dialog = $.alert({
+			title: "Đăng nhập",
+			content: html_login_form,
+			columnClass: 's',
+			closeIcon: true,
+			buttons: {
+
+				yes: {
+					text: 'Login',
+					btnClass: 'btn-primary',
+					action: function () {
+						var login_data = {
+							action: 'login',
+							uid: $('#uid').val(),
+							pwd: $('#pwd').val()
+						};
+						$.post(api, login_data, function (json) {
+							if (json.ok) {
+								show_user(json);
+								//đóng hộp thoại login lại
+								login_dialog.close();
+							} else {
+								bao_loi(json.msg, function () {
+									$('#pwd').focus();
+								});
+
+								logined = false;
+								//ko đc đóng login
+							}
+						}, 'json');
+						return false; //ko đóng hộp thoại login lại
+					}
+				},
+				close: {
+					text: 'Close',
+					btnClass: 'btn-danger',
+					action: function () {
+					}
+				},
+			}
+		})
+	}
+
+	function bao_loi(msg, callback) {
+		$.alert({
+			title: 'Báo lỗi',
+			content: msg,
+			autoClose: 'ok|3000',
+			buttons: { ok: {} },
+			onDestroy: function () {
+				callback()
+			}
+		});
 	}
 	//khi nào gọi hàm này?
 	//khi click vào 1 phòng, phòng đang ở class nào?? .phong-hoc
@@ -108,62 +222,69 @@
 							'</tr>';
 					}
 					html += '</tbody></table></div>';
+				} else {
+					html = json.msg; //báo lỗi của api
+					logined = false;
+				}
 
-					var dialog = $.confirm({
-						title: 'Lịch sử thay đổi trạng thái phòng: ' + MAP[idPhong].name,
-						content: html,
-						columnClass: 'm',
-						closeIcon: true,
-						buttons: {
-							fix: {
-								text: '<span title="Chuyển phòng này sang trạng thái bận">Đang Sửa</span>',
-								btnClass: 'btn-danger',
-								keys: ['b', 'f'],
-								isHidden: MAP[idPhong].status == 3,
-								action: function () {
-									//code để chuyển phòng này sang trạng đang sửa
-									change_status(idPhong, 3, function () {
-										dialog.close();
-									});
-								}
-							},
-							hoc: {
-								text: '<span title="Chuyển phòng này sang trạng thái học">Đang học</span>',
-								btnClass: 'btn-blue',
-								keys: ['h'],
-								isHidden: MAP[idPhong].status == 2,
-								action: function () {
-									//code để chuyển phòng này sang trạng đang học
-									change_status(idPhong, 2, function () {
-										dialog.close();
-									});
-								}
-							},
-							free: {
-								text: '<span title="Chuyển phòng này sang trạng phòng trống">Phòng trống</span>',
-								btnClass: 'btn-warning',
-								keys: ['t'],
-								isHidden: MAP[idPhong].status == 1,
-								action: function () {
-									//code để chuyển phòng này sang trạng đang học
-									change_status(idPhong, 1, function () {
-										dialog.close();
-									});
-								}
-							},
-							Close: {
-								text: 'Đóng lại',
-								btnClass: 'btn-secondary',
-								keys: ['esc','x'],
-								action: function () {
-									//ko làm gì
-								}
+				//use lib jquery-confirm
+
+				var dialog = $.confirm({
+					title: 'Lịch sử thay đổi trạng thái phòng: ' + MAP[idPhong].name,
+					content: html,
+					columnClass: 'm',
+					closeIcon: true,
+					buttons: {
+						fix: {
+							text: '<span title="Chuyển phòng này sang trạng thái bận">Đang Sửa</span>',
+							btnClass: 'btn-danger',
+							keys: ['b', 'f'],
+							isHidden: MAP[idPhong].status == 3,
+							action: function () {
+								//code để chuyển phòng này sang trạng đang sửa
+								change_status(idPhong, 3, function () {
+									//dialog.close();
+									get_history(idPhong)
+								});
+							}
+						},
+						hoc: {
+							text: '<span title="Chuyển phòng này sang trạng thái học">Đang học</span>',
+							btnClass: 'btn-blue',
+							keys: ['h'],
+							isHidden: MAP[idPhong].status == 2,
+							action: function () {
+								//code để chuyển phòng này sang trạng đang học
+								change_status(idPhong, 2, function () {
+									//dialog.close();
+									get_history(idPhong)
+								});
+							}
+						},
+						free: {
+							text: '<span title="Chuyển phòng này sang trạng phòng trống">Phòng trống</span>',
+							btnClass: 'btn-warning',
+							keys: ['t'],
+							isHidden: MAP[idPhong].status == 1,
+							action: function () {
+								//code để chuyển phòng này sang trạng đang học
+								change_status(idPhong, 1, function () {
+									//dialog.close();
+									get_history(idPhong)
+								});
+							}
+						},
+						Close: {
+							text: 'Đóng lại',
+							btnClass: 'btn-secondary',
+							keys: ['esc', 'x'],
+							action: function () {
+								//ko làm gì
 							}
 						}
-					});
-				} else {
-					//bao loi
-				}
+					}
+				});
+
 			},
 			'json');
 	}
@@ -179,7 +300,6 @@
 				if (json.ok) {
 					for (var item of json.data) {
 						MAP[item.id] = item;
-						THONG_KE[item.status]++;
 					}
 					callback(key);
 				} else {
@@ -190,7 +310,6 @@
 	}
 	function thong_ke_lai() {
 		THONG_KE[1] = THONG_KE[2] = THONG_KE[3] = 0;
-		console.log(MAP)
 		for (var key in MAP) {
 			var item = MAP[key];
 			THONG_KE[item.status]++;
@@ -205,6 +324,38 @@
 		$('#thong-ke').html(html);
 	}
 
+	function cap_nhat_trang_thai() {
+		for (var key in TNUT) {
+			get_status(key, function (key) {
+
+			})
+		}
+	}
+	function do_logout() {
+		$.post(api, { action: 'logout' }, function (json) {
+			if (json.ok) {
+				logined = false;
+				//ẩn thông tin
+				$('#user-info').html('');
+				//ẩn nút logout
+				$('.cmd-logout').addClass('no-display');
+				$('.cmd-login').removeClass('no-display');
+			}
+		}, 'json');
+	}
+	function check_logined() {
+		$.post(api, { action: 'check_logined' }, function (json) {
+			if (json.ok) {
+				//đây chính là thông tin user hợp lệ
+				show_user(json);
+			}
+		}, 'json');
+	}
+	$('.cmd-login').click(function () { do_login(); });
+	$('.cmd-logout').click(function () { do_logout(); });
+	//F5 thì mất biết logined => ko có thông tin user, hide Logout
+	//mỗi vào trang thì hỏi api xem cookie chứa sid có ok ko?
+	check_logined();
 	var dem = 0;
 	for (var key in TNUT) {
 		get_status(key, function (key) {
@@ -218,10 +369,21 @@
 					var id = $(this).data('key')
 					get_history(id);
 				});
+				thong_ke_lai();
 				show_thong_ke();
+
+				setInterval(function () {
+					cap_nhat_trang_thai();
+				}, 20000);
 			}
 		});
 	}
 
 
-});
+});//callback trong js : giúp hàm đc tái sử dụng nhiều lần
+//mỗi lần hậu xử lý khác nhau bởi callback
+
+//callback : gọi ngược lại
+
+//kỹ thuật: truyền 1 hàm vào làm tham số 1 hàm
+//trong hàm : dùng tham số đó như 1 hàm : callback(json)

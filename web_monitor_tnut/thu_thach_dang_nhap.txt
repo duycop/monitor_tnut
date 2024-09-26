@@ -1,0 +1,39 @@
+﻿today 26.9.2024
+we:
+- login chỉ show khi biến logined=false
+- không cần nhập gì: post action:check_logined
+  auto kèm sid
+  => api bảo ok+user info
+- khi cố tình fake sid (thất bại), fake logined=true
+  gửi đi được từ client: action:change_statsu, id, new status
+  bị server  check 35^24: sid sai
+  báo lỗi
+- sql: check uid+pwd by where toán tử pwd=@pwd
+	thì @pwd là các biến thể HOA thường of pwd xịn=> OK
+	pass bằng: dùng hàm băm
+	quản trị db vẫn thấy pwd 
+	db lưu kq băm => quản trị khó thấy
+	vì hàm băm ko dịch ngược đc
+
+- còn 1 pha có thể bị hack:
+  bắt gói tin trên đường truyền
+  vì client gủi đi uid+pwd rõ (BoOnG)
+YOU:
+  hãy mã hoá pw ở client, gửi đi kq mã hoá, ko gửi đi bản rõ của pw
+  hacker phát lại gói tín của lần login pw mã hoá (xịn) => vẫn hack ok
+
+Giải pháp:  keywork để sv tìm hiểu => thành sp
+ - login form:
+	lấy từ api 1 đoạn MUỐI (đoạn 64 kí tự ngẫu nhiên), 
+	đồng thời lưu Muối vào session
+	
+	nhập pwd rõ vào form
+	mã hoá (pwd+muối) ~ oàn tà là vèo 1
+	auto gửi sid
+
+	sql phải lưu pwd rõ
+	api: nhận đc: pwd, ss=>muối => mã hoá (pwd+muối) = oàn tà là vèo 1 : là ok
+
+
+
+

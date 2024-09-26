@@ -11,9 +11,10 @@ namespace lib_db
     public class sqlserver
     {
         private const string SP = "SP_API";
-        public string cnstr;
+        public string cnstr; //cần truyền cho tôi chuỗi kết nối
 
         //viết 1 hàm dùng chung, vì nó chỉ khác nhau ở cmd
+        //cmd có sẵn tham số
         public string get_json(string action, SqlCommand cmd)
         {
             using (SqlConnection conn = new SqlConnection(cnstr))
@@ -55,7 +56,7 @@ namespace lib_db
                 return json;
             }
         }
-        
+
         public string change_status(int idPhong, int status)
         {
             using (SqlCommand cmd = new SqlCommand())
@@ -63,6 +64,17 @@ namespace lib_db
                 cmd.Parameters.Add("idPhong", SqlDbType.Int).Value = idPhong;
                 cmd.Parameters.Add("status", SqlDbType.Int).Value = status;
                 string json = get_json("change_status", cmd);
+                return json;
+            }
+        }
+
+        public string login(string uid, string pwd)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+                cmd.Parameters.Add("pwd", SqlDbType.VarChar, 50).Value = pwd;
+                string json = get_json("login", cmd);
                 return json;
             }
         }
