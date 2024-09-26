@@ -77,6 +77,7 @@
     <Content Include="asset\mystyle3.css" />
     <Content Include="asset\mystyle2.css" />
     <Content Include="asset\mystyle.css" />
+    <Content Include="db\bak-db-2024-09-26.sql" />
     <Content Include="db\csdl.txt" />
     <Content Include="db\sql-tnut-monitor.sql" />
     <Content Include="db\sql_gen_data.sql" />
