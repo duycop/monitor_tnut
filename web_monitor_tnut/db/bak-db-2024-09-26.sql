@@ -289,23 +289,24 @@ BEGIN
 	end;
 	else if(@action='login')
 	begin
-		--trả về json={ok:1,msg:welcome,name='',lastLogin=time} nếu login ok, ngược lại cũng trả về json: ok=0,msg=báo lỗi nào đó
-		if exists(select * from [user] where [uid]=@uid and pwd=HASHBYTES ('SHA1',@pwd) )
+		--trả về json={ok:1,msg:welcome,uid=uid,name=name,lastLogin=time} nếu login ok, ngược lại cũng trả về json: ok=0,msg=báo lỗi nào đó
+		if exists(select * from [user] where ([uid] = @uid) and (pwd = HASHBYTES('SHA1',@pwd)) ) --nếu tồn tại user trùng uid và pwd
 		begin
 			SET NOCOUNT ON;
 
-			select 1 as ok,N'Login thành công' as [msg], [uid],[name],[lastLogin]
+			select 1 as ok,N'Login thành công' as [msg], [uid], [name], [lastLogin]
 			from [user]
-			where uid=@uid and pwd= HASHBYTES ('SHA1',@pwd)
-			for json path,without_array_wrapper;
+			where uid = @uid --and pwd= HASHBYTES ('SHA1',@pwd) --chỗ này ko cần phải HASH nữa
+			for json path, without_array_wrapper;
 
-			update [user] set lastLogin=getdate(); --cập nhật now là lần login thành công cuối cùng
-		end
+			update [user] set lastLogin=getdate() where uid = @uid; --cập nhật now là lần login thành công cuối cùng
+		end;
 		else
 		begin
-			select 0 as ok,N'Có gì đó sai sai' as msg for json path,without_array_wrapper;
-		end
-	end
+			select 0 as ok,N'Có gì đó sai sai' as msg 
+			for json path, without_array_wrapper;
+		end;
+	end;
 END;
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'đây chỉ là id status' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'History', @level2type=N'COLUMN',@level2name=N'status'
