@@ -144,12 +144,14 @@ namespace web_monitor_tnut
 
         class LoginData
         {
-            public int ok;
-            public string uid, name;
+            public int ok { get; set; }
+            public string uid { get; set; }
+            public string name { get; set; }
         }
 
         void check_logined()
         {
+            this.Session["check"] = 1;
             try
             {
                 LoginData m = (LoginData)this.Session["user-info"];
@@ -159,7 +161,7 @@ namespace web_monitor_tnut
                     this.Response.Write(json);
                 }
             }
-            catch 
+            catch
             {
                 bao_loi("nó chưa đăng nhập");
             }
@@ -197,11 +199,52 @@ namespace web_monitor_tnut
             }
         }
 
+        void login2()
+        {
+            string json = "";
+            try
+            {
+                string uid = this.Request.Form["uid"];
+                string client_pwd_hash = this.Request.Form["pwd"];
+                string salt = (string)this.Session["salt"];
+
+                lib_db.sqlserver db = new lib_db.sqlserver();
+                db.cnstr = cnstr;
+                byte[] pw_db_sha1 = db.GetStoredPasswordHash(uid);
+
+                if (pw_db_sha1 != null)
+                {
+                    bool ok = lib_salt.PasswordHasher.VerifyPassword(pw_db_sha1, client_pwd_hash, salt);
+                    if (ok)
+                    {
+                        json = db.get_user(uid);
+                    }
+                    else
+                    {
+                        json = get_bao_loi($"Mật khẩu sai rồi!");
+                    }
+                }
+                else
+                {
+                    json = get_bao_loi($"Không tồn tại user này!");
+                }
+            }
+            catch (Exception ex)
+            {
+                json = get_bao_loi($"Error: {ex.Message}");
+            }
+            finally
+            {
+                //gửi lại client
+                this.Response.Write(json);
+            }
+        }
+
         void logout()
         {
             this.Session["user-info"] = null; //cho ăn chắc
             this.Session.Abandon(); //huỷ mọi thứ của ngăn kéo này
-            //luôn thành công
+                                    //luôn thành công
             PhanHoi p = new PhanHoi();
             p.ok = true;
             p.msg = "Thoát rồi nhé! bye bye";
@@ -225,6 +268,17 @@ namespace web_monitor_tnut
                 return false;
             }
         }
+        void GenerateSalt()
+        {
+            string salt = lib_salt.Salt.RandomString(64);
+            this.Session["salt"] = salt;
+            PhanHoi p = new PhanHoi();
+            p.ok = true;
+            p.msg = salt;
+            string json = JsonConvert.SerializeObject(p);
+            this.Response.Write(json);
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             //Request.Form là lấy từ POST của client
@@ -263,15 +317,19 @@ namespace web_monitor_tnut
 
                 case "check_logined":
                     check_logined();
-                    break; 
-
-                 case "login":
-                    login();
-                    break; 
-                
+                    break;
+                case "login":
+                    //login();
+                    login2();
+                    break;
                 case "logout":
                     logout();
                     break;
+
+                case "GenerateSalt":
+                    GenerateSalt();
+                    break;
+
                 default:
                     bao_loi("Lỗi rồi nhé, kiểm tra lại action!");
                     break;

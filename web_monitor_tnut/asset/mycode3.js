@@ -116,7 +116,25 @@
 		//ẩn nút login
 		$('.cmd-login').addClass('no-display');
 	}
+	var my_salt = '';
+	function GenerateSalt() {
+		$.post(api, { action: 'GenerateSalt' }, function (json) {
+			my_salt = json.msg;
+			console.log('Lấy được muối: ' + my_salt);
+		}, 'json');
+	}
 	function do_login() {
+		//lấy tí muối
+		GenerateSalt(); 
+		// Hàm tính toán SHA1
+		function sha1(input) {
+			return CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
+		}
+		// Hàm mã hóa mật khẩu
+		function hashPassword(password, salt) {
+			// Mã hóa: SHA1(SHA1(pw) + muối)
+			return sha1(sha1(password) + salt);
+		}
 		//html có chứa login form
 		var html_login_form = `<form class="was-validated">
   <div class="mb-3 mt-3">
@@ -146,7 +164,7 @@
 						var login_data = {
 							action: 'login',
 							uid: $('#uid').val(),
-							pwd: $('#pwd').val()
+							pwd: hashPassword($('#pwd').val(), my_salt),
 						};
 						$.post(api, login_data, function (json) {
 							if (json.ok) {
@@ -154,10 +172,10 @@
 								//đóng hộp thoại login lại
 								login_dialog.close();
 							} else {
+								GenerateSalt(); //sinh muối mới
 								bao_loi(json.msg, function () {
 									$('#pwd').focus();
 								});
-
 								logined = false;
 								//ko đc đóng login
 							}
@@ -351,6 +369,7 @@
 			}
 		}, 'json');
 	}
+
 	$('.cmd-login').click(function () { do_login(); });
 	$('.cmd-logout').click(function () { do_logout(); });
 	//F5 thì mất biết logined => ko có thông tin user, hide Logout

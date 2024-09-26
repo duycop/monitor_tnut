@@ -1,4 +1,4 @@
-# Monitor_TNUT : Lập trình web ui
+﻿# Monitor_TNUT : Lập trình web ui
 
 ## Thử làm bài tập 2 cùng 57kmt
 
@@ -57,3 +57,10 @@ cập nhật file css kết quả việc kéo thả:
 ## Video kết quả:
 
 Video đã upload trên group telegram của lớp: [xem video](https://t.me/c/2461681536/50)
+
+## Ngày 26.9.2024 ==> Làm ở nhà OK
+- Đã làm xong phần login + hash
+- trước khi login client nhận muối (random) từ server
+- client gửi lên cũng là hash
+- Mỗi lần gửi lên khác nhau
+- server cũng chỉ lưu hash

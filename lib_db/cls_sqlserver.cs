@@ -78,5 +78,40 @@ namespace lib_db
                 return json;
             }
         }
+        public string get_user(string uid)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+                string json = get_json("get_user", cmd);
+                return json;
+            }
+        }
+        
+
+        public byte[] GetStoredPasswordHash(string uid)
+        {
+            byte[] storedHash = null;
+
+            using (SqlConnection conn = new SqlConnection(cnstr))
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = SP;
+                    cmd.CommandType= CommandType.StoredProcedure;
+                    cmd.Parameters.Add("action", SqlDbType.VarChar, 50).Value = "GetStoredPasswordHash";
+                    cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+
+                    object result = cmd.ExecuteScalar();
+                    if (result != null)
+                    {
+                        storedHash = (byte[])result;
+                    }
+                }
+            }
+
+            return storedHash;
+        }
     }
 }

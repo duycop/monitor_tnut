@@ -66,6 +66,7 @@
     <Content Include="asset\bootstrap.bundle.min.js" />
     <Content Include="asset\bootstrap.min.css" />
     <Content Include="asset\callback-demo.js" />
+    <Content Include="asset\crypto-js.min.js" />
     <Content Include="asset\jquery-confirm.min.css" />
     <Content Include="asset\jquery-confirm.min.js" />
     <Content Include="asset\jquery-ui.min.css" />
@@ -114,6 +115,10 @@
     <ProjectReference Include="..\lib_db\lib_db.csproj">
       <Project>{71f533e5-75e2-44ba-b22a-2544edfab3a0}</Project>
       <Name>lib_db</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lib_salt\lib_salt.csproj">
+      <Project>{dd519e5c-3cf8-49ad-a294-9b01d9a8c896}</Project>
+      <Name>lib_salt</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
