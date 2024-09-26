@@ -1,6 +1,7 @@
 ﻿$(function () {  //event Document Ready
 	'use strict';
 	var logined = false; //check việc đã login phía client
+	var visitorId = '';
 	var user_info;
 	const api = '/api.aspx';
 	$(".toa-nha").draggable();
@@ -165,6 +166,7 @@
 							action: 'login',
 							uid: $('#uid').val(),
 							pwd: hashPassword($('#pwd').val(), my_salt),
+							fp: visitorId
 						};
 						$.post(api, login_data, function (json) {
 							if (json.ok) {
@@ -254,9 +256,23 @@
 			}
 			return html;
 		}
-		function update_history(json, dialog) { 
+		function update_history(json, dialog) {
 			var html = get_html_history(json);
+			var status = json.data[0].status;
 			dialog.setContent(html);
+			if (status == 1) {
+				dialog.buttons.free.hide();
+				dialog.buttons.hoc.show();
+				dialog.buttons.fix.show();
+			} else if (status == 2) {
+				dialog.buttons.free.show();
+				dialog.buttons.hoc.hide();
+				dialog.buttons.fix.show();
+			} else if (status == 3) {
+				dialog.buttons.free.show();
+				dialog.buttons.hoc.show();
+				dialog.buttons.fix.hide();
+			}
 		}
 		function show_history(json) {
 			var html = get_html_history(json);
@@ -374,20 +390,30 @@
 			}
 		}, 'json');
 	}
-	function check_logined() {
-		$.post(api, { action: 'check_logined' }, function (json) {
+	function check_logined(fp) {
+		$.post(api, { action: 'check_logined', fp: fp }, function (json) {
 			if (json.ok) {
 				//đây chính là thông tin user hợp lệ
 				show_user(json);
 			}
 		}, 'json');
 	}
-
+	function load_fp(callback) {
+		// Tải FingerprintJS
+		FingerprintJS.load().then(fp => {
+			// Lấy fingerprint của trình duyệt
+			fp.get().then(result => {
+				visitorId = result.visitorId;
+				callback(visitorId);
+			});
+		});
+	}
+	load_fp(function (fp) { check_logined(fp); });
 	$('.cmd-login').click(function () { do_login(); });
 	$('.cmd-logout').click(function () { do_logout(); });
 	//F5 thì mất biết logined => ko có thông tin user, hide Logout
 	//mỗi vào trang thì hỏi api xem cookie chứa sid có ok ko?
-	check_logined();
+
 	var dem = 0;
 	for (var key in TNUT) {
 		get_status(key, function (key) {

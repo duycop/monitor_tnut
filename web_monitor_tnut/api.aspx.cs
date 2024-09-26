@@ -147,6 +147,7 @@ namespace web_monitor_tnut
             public int ok { get; set; }
             public string uid { get; set; }
             public string name { get; set; }
+            public string fp { get; set; }
         }
 
         void check_logined()
@@ -155,15 +156,29 @@ namespace web_monitor_tnut
             try
             {
                 LoginData m = (LoginData)this.Session["user-info"];
-                if (m.ok == 1)
+                if (m.ok == 1 )
                 {
-                    string json = JsonConvert.SerializeObject(m);
-                    this.Response.Write(json);
+                    string fp = this.Request.Form["fp"];
+                    bool ok= m.fp.Equals(fp, StringComparison.OrdinalIgnoreCase);
+                    if (ok)
+                    {
+                        m.fp = null;
+                        string json = JsonConvert.SerializeObject(m);
+                        this.Response.Write(json);
+                    }
+                    else
+                    {
+                        bao_loi("Có lỗi ở fp");
+                    }
+                }
+                else
+                {
+                    bao_loi("Chưa lưu user-info");
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                bao_loi("nó chưa đăng nhập");
+                bao_loi($"Lỗi gì đó: {ex.Message}");
             }
 
         }
@@ -175,7 +190,7 @@ namespace web_monitor_tnut
                 lib_db.sqlserver db = get_db(); //hàm này dùng chung cho nhanh
                 //lấy thêm tham số tên là idPhong từ client gửi POST lên
                 string uid = this.Request.Form["uid"];
-                string pwd = this.Request.Form["pwd"];
+                string pwd = this.Request.Form["pwd"]; //pwd rõ
                 //gọi hàm trong dll, truyền tham số, nhận lại json
                 json = db.login(uid, pwd);
 
@@ -205,25 +220,26 @@ namespace web_monitor_tnut
             try
             {
                 string uid = this.Request.Form["uid"];
-                string client_pwd_hash = this.Request.Form["pwd"];
-                string salt = (string)this.Session["salt"];
+                string client_pwd_hash = this.Request.Form["pwd"]; //pw đã mã hoá với muối
+                string salt = (string)this.Session["salt"];  //lấy muối đã lưu trong session trước đó
 
                 lib_db.sqlserver db = new lib_db.sqlserver();
                 db.cnstr = cnstr;
-                byte[] pw_db_sha1 = db.GetStoredPasswordHash(uid);
+                byte[] pw_db_sha1 = db.GetStoredPasswordHash(uid); //lấy mật khẩu đã mã hoá trong db
 
                 if (pw_db_sha1 != null)
                 {
                     bool ok = lib_salt.PasswordHasher.VerifyPassword(pw_db_sha1, client_pwd_hash, salt);
                     if (ok)
                     {
-                        json = db.get_user(uid);
+                        json = db.get_user(uid); //lấy thông tin user theo uid, ko cần pwd
 
-                        //chuyeern json -> obj LoginData
+                        //chuyển json -> obj LoginData
                         LoginData m = JsonConvert.DeserializeObject<LoginData>(json);
                         if (m.ok == 1)
                         {
-                            //luu m vào session
+                            m.fp = this.Request.Form["fp"];
+                            //lưu m vào session
                             this.Session["user-info"] = m;
                         }
                     }
