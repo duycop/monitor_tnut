@@ -14,7 +14,6 @@ we:
 	quản trị db vẫn thấy pwd 
 	db lưu kq băm => quản trị khó thấy
 	vì hàm băm ko dịch ngược đc
-
  - còn 1 pha có thể bị hack:
 	bắt gói tin trên đường truyền
 	vì client gủi đi uid+pwd rõ (BoOnG)
@@ -23,19 +22,27 @@ YOU:
   hacker phát lại gói tín của lần login pw mã hoá (xịn) => vẫn hack ok
 
 Giải pháp:  keywork để sv tìm hiểu => thành sp
- - login form:
+ - Login form:
 	lấy từ api 1 đoạn MUỐI (đoạn 64 kí tự ngẫu nhiên), 
-	server đồng thời lưu Muối vào session và gửi về client sid
-	
+	server đồng thời lưu Muối vào session và gửi về client sid	
+ - User:
 	user nhập uid+pwd rõ vào form
+ - Ajax:
 	ajax gửi lên: uid, mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1
 	và auto gửi kèm lên sid 
-  - Cookie:
+ - Cookie:
 	all các thứ trong cookie của domain này được auto gửi lên
 	cookie là 1 phần của header)
-
- - Trong db:
-	đã lưu mã hoá của pwd
- - phía server
+ - Trong cơ sở dữ liệu:
+	đã lưu mã hoá hash của pwd
+ - hàm Hash: 
+    + Ở trong SQL có hàm HASHBYTES('SHA1', @input) trả về 160 bit output của @input
+	Có nhiều loại: MD2 | MD4 | MD5 | SHA | SHA1 | SHA2_256 | SHA2_512
+	tham khảo: https://learn.microsoft.com/vi-vn/sql/t-sql/functions/hashbytes-transact-sql?view=sql-server-ver16&viewFallbackFrom=sql-server-2022
+	+ Trong JS có đối tượng crypto giúp mã hoá
+	  tham khảo: https://developer.mozilla.org/en-US/docs/Web/API/Crypto
+	+ Hash Là hàm 1 chiều, ko thể dịch ngược từ output Hash ra input Hash
+	+ Mỗi thay đổi nhỏ trong input đều sinh ra thay đổi LỚN trong output
+ - Server:
 	api nhận đc: {pwd, sid} từ client gửi lên (ajax post lên)
 	từ sid=>muối => mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1 : là ok
