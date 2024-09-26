@@ -27,10 +27,10 @@ Giải pháp:  keywork để sv tìm hiểu => thành sp
 	lấy từ api 1 đoạn MUỐI (đoạn 64 kí tự ngẫu nhiên), 
 	đồng thời lưu Muối vào session, gửi về client sid
 	
-	nhập pwd rõ vào form
-	mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1
-	auto gửi sid (trong cookie)
+	nhập uid+pwd rõ vào form
+	gửi lên: uid, mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1
+	và auto gửi kèm lên sid (gửi đi trong cookie, cookie là 1 phần của header)
 
 	trong db đã lưu mã hoá của pwd
-	api: nhận đc: {pwd, sid}
-	     từ sid=>muối => mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1 : là ok
+	phía server thì api nhận đc: {pwd, sid}
+	từ sid=>muối => mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1 : là ok
