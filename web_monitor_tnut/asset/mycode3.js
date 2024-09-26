@@ -59,7 +59,7 @@
 		if (!logined) {
 			//thông báo: mày chưa login, ko đc thay đổi, có muốn login ko
 			//nếu có thì gọi hàm login() => show dialog nhập uid+pwd
-			$.alert({
+			$.confirm({
 				title: "Báo lỗi",
 				content: "Muốn thay đổi trạng thái thì cần login?",
 				columnClass: 's',
@@ -125,7 +125,7 @@
 	}
 	function do_login() {
 		//lấy tí muối
-		GenerateSalt(); 
+		GenerateSalt();
 		// Hàm tính toán SHA1
 		function sha1(input) {
 			return CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
@@ -206,105 +206,118 @@
 	}
 	//khi nào gọi hàm này?
 	//khi click vào 1 phòng, phòng đang ở class nào?? .phong-hoc
-	function get_history(idPhong) {
+
+
+	function _get_history(idPhong, callback) {
 		$.post(api,
 			{
 				action: 'get_history',
 				idPhong: idPhong
 			},
 			function (json) {
-				if (json.ok) {
-					//hậu xử lý ra html: đi ăn sáng đã: kệ nó quay
-					//đã ăn xong, vào làm tiếp
-					var html = '<div class="table-responsive">' +
-						'<table class="table table-hover"><thead>' +
-						'<tr class="table-info">' +
-						'<th>STT</th>' +
-						'<th>Trạng thái</th>' +
-						'<th>Thời gian</th>' +
-						'</tr>' +
-						'</thead><tbody>';
-					//show html ra 1 dialog
-					if (json.data) {
-						var stt = 0;
-						for (var row of json.data) {
-							html += '<tr>' +
-								`<td>${++stt}</td>` +
-								`<td>${TITLE[row.status]}</td>` +
-								`<td>${row.time}</td>` +
-								'</tr>';
-						}
-					} else {
-						html += '<tr class="table-warning">' +
-							`<td colspan=3>KHÔNG CÓ DỮ LIỆU LỊCH SỬ</td>` +
+				callback(json);
+			}, 'json');
+	}
+	function get_history(idPhong) {
+		function get_html_history(json) {
+			var html;
+			if (json.ok) {
+				//hậu xử lý ra html: đi ăn sáng đã: kệ nó quay
+				//đã ăn xong, vào làm tiếp
+				html = '<div class="table-responsive">' +
+					'<table class="table table-hover"><thead>' +
+					'<tr class="table-info">' +
+					'<th>STT</th>' +
+					'<th>Trạng thái</th>' +
+					'<th>Thời gian</th>' +
+					'</tr>' +
+					'</thead><tbody>';
+				//show html ra 1 dialog
+				if (json.data) {
+					var stt = json.data.length;
+					for (var row of json.data) {
+						html += '<tr>' +
+							`<td>${stt--}</td>` +
+							`<td>${TITLE[row.status]}</td>` +
+							`<td>${row.time}</td>` +
 							'</tr>';
 					}
-					html += '</tbody></table></div>';
 				} else {
-					html = json.msg; //báo lỗi của api
-					logined = false;
+					html += '<tr class="table-warning">' +
+						`<td colspan=3>KHÔNG CÓ DỮ LIỆU LỊCH SỬ</td>` +
+						'</tr>';
 				}
-
-				//use lib jquery-confirm
-
-				var dialog = $.confirm({
-					title: 'Lịch sử thay đổi trạng thái phòng: ' + MAP[idPhong].name,
-					content: html,
-					columnClass: 'm',
-					closeIcon: true,
-					buttons: {
-						fix: {
-							text: '<span title="Chuyển phòng này sang trạng thái bận">Đang Sửa</span>',
-							btnClass: 'btn-danger',
-							keys: ['b', 'f'],
-							isHidden: MAP[idPhong].status == 3,
-							action: function () {
-								//code để chuyển phòng này sang trạng đang sửa
-								change_status(idPhong, 3, function () {
-									//dialog.close();
-									get_history(idPhong)
-								});
-							}
-						},
-						hoc: {
-							text: '<span title="Chuyển phòng này sang trạng thái học">Đang học</span>',
-							btnClass: 'btn-blue',
-							keys: ['h'],
-							isHidden: MAP[idPhong].status == 2,
-							action: function () {
-								//code để chuyển phòng này sang trạng đang học
-								change_status(idPhong, 2, function () {
-									//dialog.close();
-									get_history(idPhong)
-								});
-							}
-						},
-						free: {
-							text: '<span title="Chuyển phòng này sang trạng phòng trống">Phòng trống</span>',
-							btnClass: 'btn-warning',
-							keys: ['t'],
-							isHidden: MAP[idPhong].status == 1,
-							action: function () {
-								//code để chuyển phòng này sang trạng đang học
-								change_status(idPhong, 1, function () {
-									//dialog.close();
-									get_history(idPhong)
-								});
-							}
-						},
-						Close: {
-							text: 'Đóng lại',
-							btnClass: 'btn-secondary',
-							keys: ['esc', 'x'],
-							action: function () {
-								//ko làm gì
-							}
+				html += '</tbody></table></div>';
+			} else {
+				html = json.msg; //báo lỗi của api
+				logined = false;
+			}
+			return html;
+		}
+		function update_history(json, dialog) { 
+			var html = get_html_history(json);
+			dialog.setContent(html);
+		}
+		function show_history(json) {
+			var html = get_html_history(json);
+			var dialog = $.confirm({
+				title: 'Lịch sử thay đổi trạng thái phòng: ' + MAP[idPhong].name,
+				content: html,
+				columnClass: 'm',
+				closeIcon: true,
+				buttons: {
+					fix: {
+						text: '<span title="Chuyển phòng này sang trạng thái bận">Đang Sửa</span>',
+						btnClass: 'btn-danger',
+						keys: ['b', 'f'],
+						isHidden: MAP[idPhong].status == 3,
+						action: function () {
+							//code để chuyển phòng này sang trạng đang sửa
+							change_status(idPhong, 3, function () {
+								_get_history(idPhong, function (json) { update_history(json, dialog); });
+							});
+							return false; // ko đóng
+						}
+					},
+					hoc: {
+						text: '<span title="Chuyển phòng này sang trạng thái học">Đang học</span>',
+						btnClass: 'btn-blue',
+						keys: ['h'],
+						isHidden: MAP[idPhong].status == 2,
+						action: function () {
+							//code để chuyển phòng này sang trạng đang học
+							change_status(idPhong, 2, function () {
+								_get_history(idPhong, function (json) { update_history(json, dialog); });
+							});
+							return false; // ko đóng
+						}
+					},
+					free: {
+						text: '<span title="Chuyển phòng này sang trạng phòng trống">Phòng trống</span>',
+						btnClass: 'btn-warning',
+						keys: ['t'],
+						isHidden: MAP[idPhong].status == 1,
+						action: function () {
+							//code để chuyển phòng này sang trạng đang học
+							change_status(idPhong, 1, function () {
+								_get_history(idPhong, function (json) { update_history(json, dialog); });
+							});
+							return false; // ko đóng
+						}
+					},
+					Close: {
+						text: 'Đóng lại',
+						btnClass: 'btn-secondary',
+						keys: ['esc', 'x'],
+						action: function () {
+							//ko làm gì
 						}
 					}
-				});
+				}
+			});
 
-			},
-			'json');
+		};
+		_get_history(idPhong, show_history)
 	}
 
 	function get_status(key, callback) {
