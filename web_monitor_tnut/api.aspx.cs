@@ -218,6 +218,14 @@ namespace web_monitor_tnut
                     if (ok)
                     {
                         json = db.get_user(uid);
+
+                        //chuyeern json -> obj LoginData
+                        LoginData m = JsonConvert.DeserializeObject<LoginData>(json);
+                        if (m.ok == 1)
+                        {
+                            //luu m vào session
+                            this.Session["user-info"] = m;
+                        }
                     }
                     else
                     {
