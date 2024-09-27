@@ -6,14 +6,14 @@ Dành cho cả lớp, làm chung 1 đề!
 1. **Class Library** (.NET Framework 2.0): **Captcha**
   - **Input+Output:**
     + Input: Nhận vào chuỗi kí tự (khoảng 6 kí tự).
-    + Ouput: Đầu ra là Bitmap chứa 6 kí tự đó. Nhưng phải làm sao để người thì nhìn thấy còn máy thì khó!
+    + Output: Đầu ra là Bitmap chứa 6 kí tự đó. Nhưng phải làm sao để người thì nhìn thấy còn máy thì khó!
   - **Thuật toán:**
     + Nhận chuỗi ngẫu nhiên
     + DLL có sẵn trước khoảng 10 ảnh nền gây lú. Add resource: add 10 ảnh vào resouce là ok.
     + Load 1 ảnh nền bất kỳ ngẫu nhiên (ảnh nền là resource của DLL đó luôn)
     + Vẽ từng ký tự trong chuỗi ngẫu nhiên vào ảnh, mỗi ký tự dùng ngẫu nhiên 1 Font trong 1 tập font xác định trước, mỗi kí tự này còn xoay đi 1 góc ngẫu nhiên (-45 độ đến +45 độ), và mỗi kí tự có 1 size ngâu nhiên, toạ độ (y) của kí tự cũng ngẫu nhiên, còn toạ độ x thì đương nhiên tăng dần để phân biệt thứ tự trước sau của các kí tự, các kí tự có thể có màu ngẫu nhiên và có thể đè lên nhau.
     + Có thể bổ xung thêm các hiệu ứng: làm thế nào đó để chữ nó ngoằn nghèo như sóng (tuỳ ý sáng tạo, tuy nhiên vẫn phải để cho người nhìn thấy chữ)
-    + Bổ xung thêm nhiễu vào ảnh: vẽ các đường thẳng, hình tròn, tam giác ở các vị trí ngẫu nhiên, kích thước ngẫu nhiên, màu sắc ngẫu nhiên, có thể đè lên các kí tự để khó nhìn, ngây nhiễu.'
+    + Bổ xung thêm nhiễu vào ảnh: vẽ các đường thẳng, hình tròn, tam giác ở các vị trí ngẫu nhiên, kích thước ngẫu nhiên, màu sắc ngẫu nhiên, có thể đè lên các kí tự để khó nhìn, ngây nhiễu.
 2. **Windows Form App** (.NET Framework 2.0): **Test dispay Captcha**
   - Tham chiếu tới DLL trên
   - Cho phép nhập text
