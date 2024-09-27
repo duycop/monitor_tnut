@@ -25,6 +25,8 @@ Dành cho cả lớp, làm chung 1 đề!
     + Sử dụng kỹ thuật tạo api.aspx để xử lý các truy vấn từ client gửi lên, kết quả trả lại json hoặc định dạng phù hợp.
     + Sử dụng Session để đếm số lần login thất bại (cặp thông tin uid và pwd không khớp với db thì tính là không hợp lệ)
     + Nếu đã 3 lần thất bại thì form login sẽ hiển thị ảnh captcha, người dùng cần nhập đúng text trong ảnh captcha thì mới xét tính đúng đắn của uid và pwd => Nếu captcha sai hoặc uid sai hoặc pwd sai thì đều bắt nhập lại với captcha mới.
+    + Ảnh captcha được sinh ra từ DLL trên
+    + Text ngẫu nhiên truyền cho captcha cũng được lưu trong session để tiện cho việc đối chiếu với text captcha người dùng nhập vào.
     + html dùng thẻ &lt;img src="..." /&gt; sẽ hiển thị được ảnh. thuộc tính **src** của thẻ **img** có thể là 1 **url**, hoặc cũng có thể ở dạng **base64**
     + Sử dụng các thư viện jQuery và jQuery-Confirm để viết code js.
 
