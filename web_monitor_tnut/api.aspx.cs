@@ -152,23 +152,21 @@ namespace web_monitor_tnut
 
         void check_logined()
         {
-            this.Session["check"] = 1;
             try
             {
                 LoginData m = (LoginData)this.Session["user-info"];
-                if (m.ok == 1 )
+                if (m.ok == 1)
                 {
                     string fp = this.Request.Form["fp"];
-                    bool ok= m.fp.Equals(fp, StringComparison.OrdinalIgnoreCase);
+                    bool ok = m.fp.Equals(fp, StringComparison.OrdinalIgnoreCase);
                     if (ok)
                     {
-                        m.fp = null;
                         string json = JsonConvert.SerializeObject(m);
                         this.Response.Write(json);
                     }
                     else
                     {
-                        bao_loi("Có lỗi ở fp");
+                        bao_loi("có gì đó dính trên cốc mà sai sai");
                     }
                 }
                 else
@@ -176,9 +174,9 @@ namespace web_monitor_tnut
                     bao_loi("Chưa lưu user-info");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                bao_loi($"Lỗi gì đó: {ex.Message}");
+                bao_loi($"Lỗi gì đó: {ex.Message}"+debug);
             }
 
         }
@@ -192,7 +190,7 @@ namespace web_monitor_tnut
                 string uid = this.Request.Form["uid"];
                 string pwd = this.Request.Form["pwd"]; //pwd rõ
                 //gọi hàm trong dll, truyền tham số, nhận lại json
-                json = db.login(uid, pwd);
+                json = db.login(uid, pwd); //pwd rõ ở đây
 
                 //chuyeern json -> obj LoginData
                 LoginData m = JsonConvert.DeserializeObject<LoginData>(json);
@@ -294,7 +292,7 @@ namespace web_monitor_tnut
         }
         void GenerateSalt()
         {
-            string salt = lib_salt.Salt.RandomString(64);
+            string salt = lib_salt.Salt.RandomString(32);
             this.Session["salt"] = salt;
             PhanHoi p = new PhanHoi();
             p.ok = true;

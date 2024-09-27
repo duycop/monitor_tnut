@@ -10,10 +10,10 @@ we:
 	báo lỗi
  - sql: check uid+pwd by where toán tử pwd=@pwd
 	thì @pwd là các biến thể HOA thường of pwd xịn=> OK
-	pass bằng: dùng hàm băm
+	pass bằng: dùng hàm băm SHA1
 	quản trị db vẫn thấy pwd 
 	db lưu kq băm => quản trị khó thấy
-	vì hàm băm ko dịch ngược đc
+	vì hàm băm ko dịch ngược đc: quản trị db thấy kq băm => ko suy ra đc pw rõ
  - còn 1 pha có thể bị hack:
 	bắt gói tin trên đường truyền
 	vì client gủi đi uid+pwd rõ (BoOnG)
@@ -27,7 +27,7 @@ Giải pháp:  keywork để sv tìm hiểu => thành sp
 	server đồng thời lưu Muối vào session và gửi về client sid	
  - User:
 	user nhập uid+pwd rõ vào form
- - Ajax:
+ - JS Ajax:
 	ajax gửi lên: uid, mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1
 	và auto gửi kèm lên sid 
  - Cookie:
@@ -41,8 +41,38 @@ Giải pháp:  keywork để sv tìm hiểu => thành sp
 	  tham khảo: https://learn.microsoft.com/vi-vn/sql/t-sql/functions/hashbytes-transact-sql?view=sql-server-ver16&viewFallbackFrom=sql-server-2022
 	+ Trong JS có đối tượng crypto giúp mã hoá
 	  tham khảo: https://developer.mozilla.org/en-US/docs/Web/API/Crypto
+	  thư viện js mã hoá dùng crypto cho xịn: tham khảo crypto-js.min.js
 	+ Hash Là hàm 1 chiều, ko thể dịch ngược từ output Hash ra input Hash
 	+ Mỗi thay đổi nhỏ trong input đều sinh ra thay đổi LỚN trong output
  - Server:
-	api nhận đc: {pwd, sid} từ client gửi lên (ajax post lên)
-	từ sid=>muối => mãhóa(mãhoá(pwd)+muối)) => oằn tà là vèo 1 : là ok
+	api nhận đc: {pwd đã mã hoá với muối, sid} từ client gửi lên (ajax post lên)
+	từ sid=>session=>muối
+	từ uid=> db (dll) lấy được db_pwd_hash  (db_pwd_hash= SHA1(pw rõ))
+	mãhóa(db_pwd_hash+muối) => oằn tà là vèo 1 
+	oằn tà là vèo 1 ở server === oằn tà là vèo 1 gửi lên từ client
+	+> xác thực đăng nhập
+
+
+	ok lắm rồi!
+
+	nhưng...
+
+	hacker thử sai nhiều lần => sẽ có xác suất đúng.
+	nếu sai 3 lần thì ngoài 2 thông tin đăg nhập (uid+pwd)
+	cần user nhập thêm CAPTCHAR , kèm 1 ảnh cho user nhìn
+
+	vậy code c# asp dot net: có làm đc điều này ko?
+
+	cơ chế:
+	phía server 
+		- đếm đc số lần login sai: dùng 1 biến đếm trogn sessison
+		- nếu dem>3 thì kích hoạt chế độ login cần có captchar
+		- SINH RA 1 CHUỖI NGẪU NHIÊN: 6 kí tự trở lên => lưu vào session
+		- SINH RA 1 ẢNH chứa NHIỄU, chứa chuỗi ngẫu nhiên trên, có thể cho mỗi kí tự 1 font khác nhau, size khác nhau, cao thấp khác nhau, góc nghiêng khác nhau, đôi khi ko thể đọc được
+	client: user
+		- nhập uid,pwd,captchar
+	server:
+		- server nhận đc 3 thông tin trên, captchar gửi lên so sánh với captchar trong session
+		- nếu sai captchar thì báo lỗi ngay kể cả uid+pwd ok.
+
+

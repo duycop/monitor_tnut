@@ -39,6 +39,8 @@
     }
     .phong-hoc.fix {
         background-color: red;
+        color:yellow;
+        font-weight:bold;
     }
 
     .no-display{

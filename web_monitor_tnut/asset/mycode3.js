@@ -84,7 +84,7 @@
 					},
 				}
 			})
-			return;
+			return; //để ko chạy phần dưới
 		}
 		$.post(api,
 			{
@@ -94,7 +94,7 @@
 			},
 			function (json) {
 				if (json.ok) {
-					//vẽ lại giao diện
+					//vẽ lại giao diện của html trong index
 					set_status('#p' + idPhong, json)
 					MAP[idPhong] = json;
 					thong_ke_lai();
@@ -258,8 +258,8 @@
 		}
 		function update_history(json, dialog) {
 			var html = get_html_history(json);
-			var status = json.data[0].status;
 			dialog.setContent(html);
+			var status = json.data[0].status;
 			if (status == 1) {
 				dialog.buttons.free.hide();
 				dialog.buttons.hoc.show();
@@ -333,6 +333,7 @@
 			});
 
 		};
+
 		_get_history(idPhong, show_history)
 	}
 
