@@ -10,7 +10,7 @@ namespace lib_db
 {
     public class sqlserver
     {
-        private const string SP = "SP_API";
+        public string SP = "SP_API";
         public string cnstr; //cần truyền cho tôi chuỗi kết nối
 
         //viết 1 hàm dùng chung, vì nó chỉ khác nhau ở cmd
@@ -68,50 +68,6 @@ namespace lib_db
             }
         }
 
-        public string login(string uid, string pwd)
-        {
-            using (SqlCommand cmd = new SqlCommand())
-            {
-                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
-                cmd.Parameters.Add("pwd", SqlDbType.VarChar, 50).Value = pwd;
-                string json = get_json("login", cmd);
-                return json;
-            }
-        }
-        public string get_user(string uid)
-        {
-            using (SqlCommand cmd = new SqlCommand())
-            {
-                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
-                string json = get_json("get_user", cmd);
-                return json;
-            }
-        }
         
-
-        public byte[] GetStoredPasswordHash(string uid)
-        {
-            byte[] storedHash = null;
-
-            using (SqlConnection conn = new SqlConnection(cnstr))
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = SP;
-                    cmd.CommandType= CommandType.StoredProcedure;
-                    cmd.Parameters.Add("action", SqlDbType.VarChar, 50).Value = "GetStoredPasswordHash";
-                    cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
-
-                    object result = cmd.ExecuteScalar();
-                    if (result != null)
-                    {
-                        storedHash = (byte[])result;
-                    }
-                }
-            }
-
-            return storedHash;
-        }
     }
 }

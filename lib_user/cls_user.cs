@@ -1,25 +1,29 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Web;
 using System.Web.SessionState;
 
 namespace lib_user
 {
-    public class user
+    public class User
     {
         public string cnstr;
+        private const string SP = "SP_User";
         private HttpRequest Request;
         private HttpSessionState Session;
         private HttpResponse Response;
+        private lib_db.sqlserver db;
 
-        public user(System.Web.UI.Page papa)
+        public User(System.Web.UI.Page papa, string cnstr)
         {
             this.Request=papa.Request;
             this.Session=papa.Session;
-            this.Response=papa.Response;            
+            this.Response=papa.Response;
+            this.cnstr = cnstr;
+            db = get_db();
         }
 
         private class LoginData
@@ -44,61 +48,63 @@ namespace lib_user
             public int? dem;
         }
 
-        lib_db.sqlserver get_db()
+        private lib_db.sqlserver get_db()
         {
             //khai báo đối tượng ở DLL
             lib_db.sqlserver db = new lib_db.sqlserver();
             //truyền chuỗi kết nối vào
-            db.cnstr = cnstr;
+            db.cnstr = this.cnstr;
+            db.SP = SP;
             return db;
         }
 
-        string get_json_bao_loi(string msg, bool ok = false, string captcha = null, string salt = null)
+        public string get_json_bao_loi(string msg, bool ok = false, string captcha = null, string salt = null)
         {
-            //chuỗi báo lỗi msg sẽ được bọc vào trong class PhanHoi
-            //để json format luôn ok
             PhanHoi p = new PhanHoi();
             p.ok = ok;
             p.msg = msg;
             p.captcha = captcha;
             p.salt = salt;
             p.dem = get_count_login();
-            //sử dụng thư viện :\Newtonsoft.Json.13.0.3\lib\net20\Newtonsoft.Json.dll
-            //để chuyển đối tượng p => json
-            string json = JsonConvert.SerializeObject(p);
-
-            //trả json về cho nơi gọi
-            return json;
+            return JsonConvert.SerializeObject(p);
         }
-        void bao_loi(string msg)
+        public void bao_loi(string msg)
         {
             string json = get_json_bao_loi(msg);
             this.Response.Write(json);
         }
 
-        void check_logined()
+        public void check_logined()
         {
             try
             {
-                LoginData m = (LoginData)this.Session["user-info"]; //hàm check_logined
-                if (m.ok == 1)
+                object obj = this.Session["user-info"];
+                if (obj == null)
                 {
-                    string fp = this.Request.Form["fp"];
-                    bool ok = m.fp.Equals(fp, StringComparison.OrdinalIgnoreCase);
-                    if (ok)
-                    {
-                        this.Session["count_login"] = 0;
-                        string json = JsonConvert.SerializeObject(m);
-                        this.Response.Write(json);
-                    }
-                    else
-                    {
-                        bao_loi("có gì đó dính trên cốc mà sai sai");
-                    }
+                    bao_loi("chưa từng login");
                 }
                 else
                 {
-                    bao_loi("Chưa lưu user-info");
+                    LoginData m = (LoginData)this.Session["user-info"]; //hàm check_logined
+                    if (m.ok == 1)
+                    {
+                        string fp = this.Request.Form["fp"];
+                        bool ok = m.fp.Equals(fp, StringComparison.OrdinalIgnoreCase);
+                        if (ok)
+                        {
+                            this.Session["count_login"] = 0;
+                            string json = JsonConvert.SerializeObject(m);
+                            this.Response.Write(json);
+                        }
+                        else
+                        {
+                            bao_loi("có gì đó dính trên cốc mà sai sai");
+                        }
+                    }
+                    else
+                    {
+                        bao_loi("Chưa lưu user-info");
+                    }
                 }
             }
             catch (Exception ex)
@@ -106,6 +112,52 @@ namespace lib_user
                 bao_loi($"Lỗi gì đó: {ex.Message}");
             }
 
+        }
+
+        private string db_login(string uid, string pwd)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+                cmd.Parameters.Add("pwd", SqlDbType.VarChar, 50).Value = pwd;
+                string json = db.get_json("login", cmd);
+                return json;
+            }
+        }
+        private string db_get_user(string uid)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+                string json = db.get_json("get_user", cmd);
+                return json;
+            }
+        }
+
+
+        private byte[] db_GetStoredPasswordHash(string uid)
+        {
+            byte[] storedHash = null;
+
+            using (SqlConnection conn = new SqlConnection(cnstr))
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = SP;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("action", SqlDbType.VarChar, 50).Value = "GetStoredPasswordHash";
+                    cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+
+                    object result = cmd.ExecuteScalar();
+                    if (result != null)
+                    {
+                        storedHash = (byte[])result;
+                    }
+                }
+            }
+
+            return storedHash;
         }
 
         private void count_login_reset()
@@ -153,7 +205,7 @@ namespace lib_user
             int dem = get_count_login();
             return dem >= 3;
         }
-        void login()
+        private void login()
         {
             string json = "";
             try
@@ -163,7 +215,7 @@ namespace lib_user
                 string uid = this.Request.Form["uid"];
                 string pwd = this.Request.Form["pwd"]; //pwd rõ
                 //gọi hàm trong dll, truyền tham số, nhận lại json
-                json = db.login(uid, pwd); //pwd rõ ở đây
+                json = db_login(uid, pwd); //pwd rõ ở đây
 
                 //chuyeern json -> obj LoginData
                 LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login
@@ -208,7 +260,7 @@ namespace lib_user
             string salt = get_salt();
             return get_json_bao_loi(msg, ok: ok, captcha: base64, salt: salt);
         }
-        bool captcha_is_ok()
+        private bool captcha_is_ok()
         {
             try
             {
@@ -232,7 +284,7 @@ namespace lib_user
                 return false;
             }
         }
-        void login2()
+        private void login2()
         {
             string json = "";
             try
@@ -247,16 +299,15 @@ namespace lib_user
                     json = json_captcha("Nhập sai captcha!");
                     return;
                 }
-                lib_db.sqlserver db = new lib_db.sqlserver();
-                db.cnstr = cnstr;
-                byte[] pw_db_sha1 = db.GetStoredPasswordHash(uid); //lấy mật khẩu đã mã hoá trong db
+
+                byte[] pw_db_sha1 = db_GetStoredPasswordHash(uid); //lấy mật khẩu đã mã hoá trong db
 
                 if (pw_db_sha1 != null)
                 {
                     bool ok = lib_salt.PasswordHasher.VerifyPassword(pw_db_sha1, client_pwd_hash, salt);
                     if (ok)
                     {
-                        json = db.get_user(uid); //lấy thông tin user theo uid, ko cần pwd
+                        json = db_get_user(uid); //lấy thông tin user theo uid, ko cần pwd
 
                         //chuyển json -> obj LoginData
                         LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login2
@@ -316,7 +367,7 @@ namespace lib_user
             }
         }
 
-        void logout()
+        public void logout()
         {
             this.Session["user-info"] = null; //cho ăn chắc
             this.Session.Abandon(); //huỷ mọi thứ của ngăn kéo này
@@ -332,7 +383,7 @@ namespace lib_user
             this.Response.Write(json);
         }
 
-        bool is_logined()
+        public bool is_logined()
         {
             try
             {
@@ -344,13 +395,13 @@ namespace lib_user
                 return false;
             }
         }
-        string get_salt()
+        public string get_salt()
         {
             string salt = lib_salt.Salt.RandomString(32);
             this.Session["salt"] = salt;
             return salt;
         }
-        void GenerateSalt()
+        public void GenerateSalt()
         {
             string json;
             if (count_login_is_over())

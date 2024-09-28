@@ -39,9 +39,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net20\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -113,17 +110,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib_captchar\lib_captcha.csproj">
-      <Project>{5de7de55-8818-44b3-87d3-0f5d35e16cb4}</Project>
-      <Name>lib_captcha</Name>
+    <ProjectReference Include="..\lib_manager_phong\lib_manager_phong.csproj">
+      <Project>{f8ab6c3d-23ef-4a61-a5fa-9cd6e019e5a3}</Project>
+      <Name>lib_manager_phong</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib_db\lib_db.csproj">
-      <Project>{71f533e5-75e2-44ba-b22a-2544edfab3a0}</Project>
-      <Name>lib_db</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\lib_salt\lib_salt.csproj">
-      <Project>{dd519e5c-3cf8-49ad-a294-9b01d9a8c896}</Project>
-      <Name>lib_salt</Name>
+    <ProjectReference Include="..\lib_user\lib_user.csproj">
+      <Project>{14bfd213-f4bb-46ba-96ad-5c8c7422076e}</Project>
+      <Name>lib_user</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

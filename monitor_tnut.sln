@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test_captcha", "test_captch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_user", "lib_user\lib_user.csproj", "{14BFD213-F4BB-46BA-96AD-5C8C7422076E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_manager_phong", "lib_manager_phong\lib_manager_phong.csproj", "{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{14BFD213-F4BB-46BA-96AD-5C8C7422076E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14BFD213-F4BB-46BA-96AD-5C8C7422076E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14BFD213-F4BB-46BA-96AD-5C8C7422076E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
