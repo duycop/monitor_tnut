@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Data.SqlClient;
+using System.Data;
 using System.Web;
 using System.Web.SessionState;
 
@@ -8,10 +10,12 @@ namespace lib_manager_phong
     public class ManagerPhong
     {
         public string cnstr;
+        private const string SP = "SP_Phong";
         private HttpRequest Request;
         private HttpSessionState Session;
         private HttpResponse Response;
         private lib_user.User user;
+        private lib_db.sqlserver db;
         public ManagerPhong(System.Web.UI.Page papa, lib_user.User user, string cnstr)
         {
             this.Request = papa.Request;
@@ -19,6 +23,7 @@ namespace lib_manager_phong
             this.Response = papa.Response;
             this.user = user;
             this.cnstr = cnstr;
+            db = get_db();
         }
         class PhanHoi
         {
@@ -42,102 +47,116 @@ namespace lib_manager_phong
         }
         lib_db.sqlserver get_db()
         {
-            //khai báo đối tượng ở DLL
             lib_db.sqlserver db = new lib_db.sqlserver();
-            //truyền chuỗi kết nối vào
             db.cnstr = cnstr;
-            db.SP = "SP_API";
+            db.SP = SP;
             return db;
         }
+        //===============
+        private string db_get_status(int idDay)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                //cmd chỉ khác nhau ở những tham số
+                cmd.Parameters.Add("idDay", SqlDbType.Int).Value = idDay;
+                string json = db.get_json("get_status", cmd);
+                return json;
+            }
+        }
+        private string db_get_all_status()
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                string json = db.get_json("get_all_status", cmd);
+                return json;
+            }
+        }
+        private string db_get_history(int idPhong)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Parameters.Add("idPhong", SqlDbType.Int).Value = idPhong;
+                string json = db.get_json("get_history", cmd);
+                return json;
+            }
+        }
+
+        private string db_change_status(int idPhong, int status)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Parameters.Add("idPhong", SqlDbType.Int).Value = idPhong;
+                cmd.Parameters.Add("status", SqlDbType.Int).Value = status;
+                string json = db.get_json("change_status", cmd);
+                return json;
+            }
+        }
+        //===============
         void get_status()
         {
-            //dùng dll để get_status
             string json = "";
             try
             {
-                lib_db.sqlserver db = get_db(); //hàm này dùng chung cho nhanh
-                //lấy thêm tham số tên là idday từ client gửi POST lên
                 int idDay = int.Parse(this.Request.Form["idDay"]);
-                //gọi hàm trong dll, truyền tham số, nhận lại json
-                json = db.get_status(idDay);
+                json = db_get_status(idDay);
             }
             catch (Exception ex)
             {
-                //nếu có lỗi thì thay json bằng biến ex try catch đc
                 json = get_json_bao_loi($"Error: {ex.Message}");
             }
             finally
             {
-                //gửi lại client
                 this.Response.Write(json);
             }
         }
         void get_all_status()
         {
-            //dùng dll để get_status
             string json = "";
             try
             {
-                lib_db.sqlserver db = get_db(); //hàm này dùng chung cho nhanh
-                //gọi hàm trong dll, ko truyền tham số, nhận lại json
-                json = db.get_all_status();
+                json = db_get_all_status();
             }
             catch (Exception ex)
             {
-                //nếu có lỗi thì thay json bằng biến ex try catch đc
                 json = get_json_bao_loi($"Error: {ex.Message}");
             }
             finally
             {
-                //gửi lại client
                 this.Response.Write(json);
             }
         }
         void get_history()
         {
-            //dùng dll để get_status
             string json = "";
             try
             {
-                lib_db.sqlserver db = get_db(); //hàm này dùng chung cho nhanh
-                //lấy thêm tham số tên là idPhong từ client gửi POST lên
                 int idPhong = int.Parse(this.Request.Form["idPhong"]);
-                //gọi hàm trong dll, truyền tham số, nhận lại json
-                json = db.get_history(idPhong);
+                json = db_get_history(idPhong);
             }
             catch (Exception ex)
             {
-                //nếu có lỗi thì thay json bằng biến ex try catch đc
                 json = get_json_bao_loi($"Error: {ex.Message}");
             }
             finally
             {
-                //gửi lại client
                 this.Response.Write(json);
             }
         }
         void change_status()
         {
-            //dùng dll để get_status
             string json = "";
             try
             {
-                lib_db.sqlserver db = get_db(); //hàm này dùng chung cho nhanh
-                //lấy thêm tham số tên là idPhong từ client gửi POST lên
                 int idPhong = int.Parse(this.Request.Form["idPhong"]);
-                //lấy thêm tham số tên là status từ client gửi POST lên
                 int status = int.Parse(this.Request.Form["status"]);
-                //gọi hàm trong dll, truyền tham số, nhận lại json
-                json = db.change_status(idPhong, status);
+                json = db_change_status(idPhong, status);
             }
             catch (Exception ex)
             {
-                //nếu có lỗi thì thay json bằng biến ex try catch đc
                 json = get_json_bao_loi($"Error: {ex.Message}");
             }
             finally
             {
-                //gửi lại client
                 this.Response.Write(json);
             }
         }

@@ -10,8 +10,12 @@ namespace lib_user
 {
     public class User
     {
-        public string cnstr;
         private const string SP = "SP_User";
+        private const string COUNT_LOGIN = "count_login";
+        private const int MAX_COUNT_LOGIN = 3;
+
+        public string cnstr;
+        
         private HttpRequest Request;
         private HttpSessionState Session;
         private HttpResponse Response;
@@ -23,7 +27,7 @@ namespace lib_user
             this.Session=papa.Session;
             this.Response=papa.Response;
             this.cnstr = cnstr;
-            db = get_db();
+            db = get_db(); //tạo sẵn db ở hàm tạo
         }
 
         private class LoginData
@@ -50,9 +54,7 @@ namespace lib_user
 
         private lib_db.sqlserver get_db()
         {
-            //khai báo đối tượng ở DLL
             lib_db.sqlserver db = new lib_db.sqlserver();
-            //truyền chuỗi kết nối vào
             db.cnstr = this.cnstr;
             db.SP = SP;
             return db;
@@ -73,7 +75,6 @@ namespace lib_user
             string json = get_json_bao_loi(msg);
             this.Response.Write(json);
         }
-
         public void check_logined()
         {
             try
@@ -134,46 +135,31 @@ namespace lib_user
             }
         }
 
-
         private byte[] db_GetStoredPasswordHash(string uid)
         {
             byte[] storedHash = null;
-
-            using (SqlConnection conn = new SqlConnection(cnstr))
+            using (SqlCommand cmd = new SqlCommand())
             {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = SP;
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add("action", SqlDbType.VarChar, 50).Value = "GetStoredPasswordHash";
-                    cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
-
-                    object result = cmd.ExecuteScalar();
-                    if (result != null)
-                    {
-                        storedHash = (byte[])result;
-                    }
-                }
-            }
-
+                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+                storedHash=db.get_bytes("GetStoredPasswordHash", cmd);
+            } 
             return storedHash;
         }
-
+       
         private void count_login_reset()
         {
-            this.Session["count_login"] = 0;
+            this.Session[COUNT_LOGIN] = 0;
         }
         private void count_login_add()
         {
             try
             {
-                object t = this.Session["count_login"];
+                object t = this.Session[COUNT_LOGIN];
                 if (t != null)
                 {
                     int dem = (int)t;
                     dem++;
-                    this.Session["count_login"] = dem;
+                    this.Session[COUNT_LOGIN] = dem;
                 }
             }
             catch
@@ -185,14 +171,14 @@ namespace lib_user
             int dem = 0;
             try
             {
-                object t = this.Session["count_login"];
+                object t = this.Session[COUNT_LOGIN];
                 if (t != null)
                 {
                     dem = (int)t;
                 }
                 else
                 {
-                    this.Session["count_login"] = 0;
+                    this.Session[COUNT_LOGIN] = 0;
                 }
             }
             catch
@@ -203,26 +189,20 @@ namespace lib_user
         private bool count_login_is_over()
         {
             int dem = get_count_login();
-            return dem >= 3;
+            return dem >= MAX_COUNT_LOGIN;
         }
         private void login()
         {
             string json = "";
             try
             {
-                lib_db.sqlserver db = get_db(); //hàm này dùng chung cho nhanh
-                //lấy thêm tham số tên là idPhong từ client gửi POST lên
                 string uid = this.Request.Form["uid"];
                 string pwd = this.Request.Form["pwd"]; //pwd rõ
-                //gọi hàm trong dll, truyền tham số, nhận lại json
                 json = db_login(uid, pwd); //pwd rõ ở đây
-
-                //chuyeern json -> obj LoginData
                 LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login
                 if (m.ok == 1)
                 {
-                    //luu m vào session
-                    this.Session["user-info"] = m;
+                    this.Session["user-info"] = m; //lưu m vào session
                     count_login_reset();
                 }
                 else
@@ -232,12 +212,10 @@ namespace lib_user
             }
             catch (Exception ex)
             {
-                //nếu có lỗi thì thay json bằng biến ex try catch đc
                 json = get_json_bao_loi($"Error: {ex.Message}");
             }
             finally
             {
-                //gửi lại client
                 this.Response.Write(json);
             }
         }
@@ -274,17 +252,15 @@ namespace lib_user
                 }
                 else
                 {
-                    //chưa quá số lần sai thì coi như đúng
-                    return true;
+                    return true;//chưa quá số lần sai thì coi như đúng
                 }
             }
             catch
             {
-                //trong quá trình kiểm tra mà có lỗi gì thì coi như nhập sai
-                return false;
+                return false;//trong quá trình kiểm tra mà có lỗi gì thì coi như nhập sai
             }
         }
-        private void login2()
+        private void login_hash()
         {
             string json = "";
             try
@@ -362,8 +338,7 @@ namespace lib_user
             }
             finally
             {
-                //gửi lại client
-                this.Response.Write(json);
+                this.Response.Write(json);//gửi lại client
             }
         }
 
@@ -424,7 +399,7 @@ namespace lib_user
                     break;
                 case "login":
                     //login();
-                    login2();
+                    login_hash();
                     break;
                 case "logout":
                     logout();
