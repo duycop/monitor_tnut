@@ -34,8 +34,9 @@ Dành cho cả lớp, làm chung 1 đề!
   1. Quay video full màn hình quá trình làm, upload lên youtube (hoặc bất kì nền tảng nào khác mà xem lại được). Có thể upload nhiều video. Trong video có nói cách làm, quay cả quá trình tìm kiếm, chát với AI,... copy và sửa đổi, test lỗi và hết lỗi (sướng thế nào!)
   2. Quá trình làm push code lên github.
   3. Ghi lại thuật toán, các bước làm, các thất bại và thành công trong quá trình làm ra file readme.md
+  4. VIDEO QUÁ TRÌNH LÀM: UPLAOPD YOUTUBE, **PASTE LINK VIDEO VÀO README.MD** ĐỂ TỪ GITHUB TRUY CẬP ĐƯỢC LUÔN.
 
 **Deadline**
   - 23:59:59 ngày 01/10/2024.
   - Nếu quá trình làm toàn thất bại cũng upload quá trình đó lên: thầy chấm quá trình, ko chấm kết quả.
-- Sinh viên không chịu nỗ lực tìm kiếm và thử sai thử sai: **Chắc chắn bị cấm thi**
+  - Sinh viên không chịu nỗ lực tìm kiếm và thử sai thử sai: **Chắc chắn bị cấm thi**
