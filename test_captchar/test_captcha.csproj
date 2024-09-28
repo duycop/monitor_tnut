@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{795614D3-2C64-4224-A10C-3B0CD0DB92C4}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>test_hash</RootNamespace>
-    <AssemblyName>test_hash</AssemblyName>
+    <ProjectGuid>{33616952-4B27-400A-9382-2D023C4F37EF}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>test_captchar</RootNamespace>
+    <AssemblyName>test_captchar</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -34,25 +34,47 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib_db\lib_db.csproj">
-      <Project>{71f533e5-75e2-44ba-b22a-2544edfab3a0}</Project>
-      <Name>lib_db</Name>
+    <ProjectReference Include="..\lib_captchar\lib_captcha.csproj">
+      <Project>{5de7de55-8818-44b3-87d3-0f5d35e16cb4}</Project>
+      <Name>lib_captcha</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib_salt\lib_salt.csproj">
-      <Project>{dd519e5c-3cf8-49ad-a294-9b01d9a8c896}</Project>
-      <Name>lib_salt</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="hash_password.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

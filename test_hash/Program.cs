@@ -3,7 +3,7 @@ using System.Text;
 
 namespace test_hash
 {
-    internal class Program
+    public class Program
     {
         public static byte[] GetStoredPasswordHash(string username)
         {

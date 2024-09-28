@@ -59,20 +59,20 @@ Giải pháp:  keywork để sv tìm hiểu => thành sp
 
 	hacker thử sai nhiều lần => sẽ có xác suất đúng.
 	nếu sai 3 lần thì ngoài 2 thông tin đăg nhập (uid+pwd)
-	cần user nhập thêm CAPTCHAR , kèm 1 ảnh cho user nhìn
+	cần user nhập thêm CAPTCHA , kèm 1 ảnh cho user nhìn
 
 	vậy code c# asp dot net: có làm đc điều này ko?
 
 	cơ chế:
 	phía server 
 		- đếm đc số lần login sai: dùng 1 biến đếm trogn sessison
-		- nếu dem>3 thì kích hoạt chế độ login cần có captchar
+		- nếu dem>3 thì kích hoạt chế độ login cần có captcha
 		- SINH RA 1 CHUỖI NGẪU NHIÊN: 6 kí tự trở lên => lưu vào session
 		- SINH RA 1 ẢNH chứa NHIỄU, chứa chuỗi ngẫu nhiên trên, có thể cho mỗi kí tự 1 font khác nhau, size khác nhau, cao thấp khác nhau, góc nghiêng khác nhau, đôi khi ko thể đọc được
 	client: user
-		- nhập uid,pwd,captchar
+		- nhập uid,pwd,captcha
 	server:
-		- server nhận đc 3 thông tin trên, captchar gửi lên so sánh với captchar trong session
-		- nếu sai captchar thì báo lỗi ngay kể cả uid+pwd ok.
+		- server nhận đc 3 thông tin trên, captcha gửi lên so sánh với captcha trong session
+		- nếu sai captcha thì báo lỗi ngay kể cả uid+pwd ok.
 
 

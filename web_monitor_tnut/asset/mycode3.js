@@ -2,6 +2,7 @@
 	'use strict';
 	var logined = false; //check việc đã login phía client
 	var visitorId = '';
+	var base64 = null;
 	var user_info;
 	const api = '/api.aspx';
 	$(".toa-nha").draggable();
@@ -118,10 +119,26 @@
 		$('.cmd-login').addClass('no-display');
 	}
 	var my_salt = '';
+
+	function show_captcha(json){
+		if (json.captcha) {
+			base64 = json.captcha;			
+			if ($('#img-captcha')) {
+				$('#captcha-zone').removeClass("no-display");
+				$('#img-captcha').attr("src", "data:image/png;base64," + base64);
+				$('#img-captcha').unbind('click').click(function(){
+					GenerateSalt();
+				});
+			}
+		} else {
+			base64 = null;
+		}
+	}
 	function GenerateSalt() {
 		$.post(api, { action: 'GenerateSalt' }, function (json) {
 			my_salt = json.msg;
 			console.log('Lấy được muối: ' + my_salt);
+			show_captcha(json);
 		}, 'json');
 	}
 	function do_login() {
@@ -150,12 +167,24 @@
     <div class="valid-feedback">Valid.</div>
     <div class="invalid-feedback">Please fill out this field.</div>
   </div>
+  <div class="mb-3 no-display" id="captcha-zone">
+	<img src="" id="img-captcha" title="Click vào ảnh để tải nội dung mới" />
+    <label for="pwd" class="form-label">Captcha: (click vào ảnh để tải nội dung mới)</label>
+    <input type="text" class="form-control" id="txt-captcha" placeholder="Enter text in image" name="txt-captcha" required>
+    <div class="valid-feedback">Valid.</div>
+    <div class="invalid-feedback">Please fill out this field.</div>
+  </div>
 </form>`;
 		var login_dialog = $.alert({
 			title: "Đăng nhập",
 			content: html_login_form,
 			columnClass: 's',
 			closeIcon: true,
+			onContentReady: function () {
+				if (base64 != null) {
+					show_captcha({ captcha: base64 })
+				}
+			},
 			buttons: {
 
 				yes: {
@@ -166,18 +195,40 @@
 							action: 'login',
 							uid: $('#uid').val(),
 							pwd: hashPassword($('#pwd').val(), my_salt),
+							captcha: $('#txt-captcha').val(),
 							fp: visitorId
 						};
+						var sending_dialog = $.confirm({
+							title: "Đăng nhập",
+							content: "đang gửi...",
+							columnClass: 's',
+							closeIcon: true,
+							autoClose: 'ok|3000',
+							buttons: {
+								ok: {
+									text: 'Close',
+									btnClass: 'btn-danger',
+									action: function () {
+									}
+								}
+							}
+						});
 						$.post(api, login_data, function (json) {
+							if (json.salt) {
+								my_salt = json.salt;
+								console.log("Lấy đc muối mới: " + json.salt)
+							}
+							show_captcha(json);
 							if (json.ok) {
 								show_user(json);
 								//đóng hộp thoại login lại
+								sending_dialog.setTitle("Đăng nhập thành công!");
+								sending_dialog.setContent("Chào mừng " + json.name + "<br>Lần đăng nhập trước: " + json.lastLogin);
 								login_dialog.close();
 							} else {
-								GenerateSalt(); //sinh muối mới
-								bao_loi(json.msg, function () {
-									$('#pwd').focus();
-								});
+								//GenerateSalt(); //sinh muối mới, ko cần nữa vì đã cho muối vào phản hồi login sai
+								sending_dialog.setTitle("Báo lỗi");
+								sending_dialog.setContent(json.msg);
 								logined = false;
 								//ko đc đóng login
 							}
@@ -403,8 +454,9 @@
 		// Tải FingerprintJS
 		FingerprintJS.load().then(fp => {
 			// Lấy fingerprint của trình duyệt
-			fp.get().then(result => {
-				visitorId = result.visitorId;
+			fp.get().then(json => {
+				visitorId = json.visitorId;
+				if (json.captcha) base64 = json.captcha; else base64 = null;
 				callback(visitorId);
 			});
 		});
@@ -432,7 +484,7 @@
 				show_thong_ke();
 
 				setInterval(function () {
-					cap_nhat_trang_thai();
+					//cap_nhat_trang_thai();
 				}, 20000);
 			}
 		});
