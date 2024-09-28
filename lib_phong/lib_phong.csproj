@@ -47,6 +47,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\lib_captcha\lib_captcha.csproj">
+      <Project>{5de7de55-8818-44b3-87d3-0f5d35e16cb4}</Project>
+      <Name>lib_captcha</Name>
+    </ProjectReference>
     <ProjectReference Include="..\lib_db\lib_db.csproj">
       <Project>{71f533e5-75e2-44ba-b22a-2544edfab3a0}</Project>
       <Name>lib_db</Name>
