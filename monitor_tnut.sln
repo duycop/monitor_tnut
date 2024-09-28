@@ -11,13 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_salt", "lib_salt\lib_sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test_hash", "test_hash\test_hash.csproj", "{795614D3-2C64-4224-A10C-3B0CD0DB92C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_captcha", "lib_captchar\lib_captcha.csproj", "{5DE7DE55-8818-44B3-87D3-0F5D35E16CB4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_captcha", "lib_captcha\lib_captcha.csproj", "{5DE7DE55-8818-44B3-87D3-0F5D35E16CB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test_captcha", "test_captchar\test_captcha.csproj", "{33616952-4B27-400A-9382-2D023C4F37EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test_captcha", "test_captcha\test_captcha.csproj", "{33616952-4B27-400A-9382-2D023C4F37EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_user", "lib_user\lib_user.csproj", "{14BFD213-F4BB-46BA-96AD-5C8C7422076E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_phong", "lib_manager_phong\lib_phong.csproj", "{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_phong", "lib_phong\lib_phong.csproj", "{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
