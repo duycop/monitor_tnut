@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test_captcha", "test_captch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_user", "lib_user\lib_user.csproj", "{14BFD213-F4BB-46BA-96AD-5C8C7422076E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_manager_phong", "lib_manager_phong\lib_manager_phong.csproj", "{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lib_phong", "lib_manager_phong\lib_phong.csproj", "{F8AB6C3D-23EF-4A61-A5FA-9CD6E019E5A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

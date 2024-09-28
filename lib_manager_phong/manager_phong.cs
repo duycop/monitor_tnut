@@ -5,9 +5,9 @@ using System.Data;
 using System.Web;
 using System.Web.SessionState;
 
-namespace lib_manager_phong
+namespace lib_phong
 {
-    public class ManagerPhong
+    public class Phong
     {
         public string cnstr;
         private const string SP = "SP_Phong";
@@ -16,7 +16,7 @@ namespace lib_manager_phong
         private HttpResponse Response;
         private lib_user.User user;
         private lib_db.sqlserver db;
-        public ManagerPhong(System.Web.UI.Page papa, lib_user.User user, string cnstr)
+        public Phong(System.Web.UI.Page papa, lib_user.User user, string cnstr)
         {
             this.Request = papa.Request;
             this.Session = papa.Session;

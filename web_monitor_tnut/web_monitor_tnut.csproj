@@ -110,9 +110,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib_manager_phong\lib_manager_phong.csproj">
+    <ProjectReference Include="..\lib_manager_phong\lib_phong.csproj">
       <Project>{f8ab6c3d-23ef-4a61-a5fa-9cd6e019e5a3}</Project>
-      <Name>lib_manager_phong</Name>
+      <Name>lib_phong</Name>
     </ProjectReference>
     <ProjectReference Include="..\lib_user\lib_user.csproj">
       <Project>{14bfd213-f4bb-46ba-96ad-5c8c7422076e}</Project>

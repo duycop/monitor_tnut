@@ -7,7 +7,7 @@ namespace web_monitor_tnut
     {
         private string cnstr;
         private lib_user.User user;
-        private lib_manager_phong.ManagerPhong phong;
+        private lib_phong.Phong phong;
         public api()
         {
             //hàm tạo, đọc lấy chuỗi kết nối trong file cấu hình
@@ -16,7 +16,7 @@ namespace web_monitor_tnut
         void init_objects()
         {
             user = new lib_user.User(this, cnstr);
-            phong = new lib_manager_phong.ManagerPhong(this, user, cnstr);
+            phong = new lib_phong.Phong(this, user, cnstr);
         }
 
         protected void Page_Load(object sender, EventArgs e)
