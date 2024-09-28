@@ -120,13 +120,13 @@
 	}
 	var my_salt = '';
 
-	function show_captcha(json){
+	function show_captcha(json) {
 		if (json.captcha) {
-			base64 = json.captcha;			
+			base64 = json.captcha;
 			if ($('#img-captcha')) {
 				$('#captcha-zone').removeClass("no-display");
 				$('#img-captcha').attr("src", "data:image/png;base64," + base64);
-				$('#img-captcha').unbind('click').click(function(){
+				$('#img-captcha').unbind('click').click(function () {
 					GenerateSalt();
 				});
 			}
@@ -136,8 +136,10 @@
 	}
 	function GenerateSalt() {
 		$.post(api, { action: 'GenerateSalt' }, function (json) {
-			my_salt = json.msg;
-			console.log('Lấy được muối: ' + my_salt);
+			if (json.salt) {
+				my_salt = json.salt;
+				console.log('Lấy được muối: ' + my_salt);
+			}
 			show_captcha(json);
 		}, 'json');
 	}
@@ -156,23 +158,20 @@
 		//html có chứa login form
 		var html_login_form = `<form class="was-validated">
   <div class="mb-3 mt-3">
-    <label for="uid" class="form-label">Username:</label>
-    <input type="text" class="form-control" id="uid" placeholder="Enter username" name="uname" required>
-    <div class="valid-feedback">OK rồi đấy.</div>
-    <div class="invalid-feedback">Please fill out this field.</div>
+    <input type="text" class="form-control uid" id="uid" placeholder="Enter username" name="uname" required>
+	<span class="valid-feedback">Username đã nhập phải chính xác nhé</span>
+    <span class="invalid-feedback">Hãy nhập username vào đi</span>
   </div>
   <div class="mb-3">
-    <label for="pwd" class="form-label">Password:</label>
-    <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd" required>
-    <div class="valid-feedback">Valid.</div>
-    <div class="invalid-feedback">Please fill out this field.</div>
+    <input type="password" class="form-control pwd" id="pwd" placeholder="Enter password" name="pswd" required>
+	<span class="valid-feedback">Password nhập rồi nhưng phải đúng nhé.</span>
+    <span class="invalid-feedback">Hãy nhập password vào đi</span>
   </div>
-  <div class="mb-3 no-display" id="captcha-zone">
-	<img src="" id="img-captcha" title="Click vào ảnh để tải nội dung mới" />
-    <label for="pwd" class="form-label">Captcha: (click vào ảnh để tải nội dung mới)</label>
+  <div class="no-display" id="captcha-zone">
+	<img src="" id="img-captcha" class="pb-1" title="Click vào ảnh để tải nội dung mới" />
     <input type="text" class="form-control" id="txt-captcha" placeholder="Enter text in image" name="txt-captcha" required>
-    <div class="valid-feedback">Valid.</div>
-    <div class="invalid-feedback">Please fill out this field.</div>
+    <span class="valid-feedback">Captcha nhập giống ảnh nhé, click vào ảnh để tải nội dung mới</span>
+    <span class="invalid-feedback">Hãy nhập chữ trong ảnh vào đi, click vào ảnh để tải nội dung mới</span>
   </div>
 </form>`;
 		var login_dialog = $.alert({
@@ -184,12 +183,40 @@
 				if (base64 != null) {
 					show_captcha({ captcha: base64 })
 				}
+
+				$('.jconfirm-holder').width($('.jconfirm-open').width());
+				let self = this;
+				var uidck = self.$content.find('.uid').val();
+				if (uidck == '')
+					self.$content.find('.uid').focus();
+				else
+					self.$content.find('.pwd').focus();
+				self.$content.find('.uid').keyup(function (event) {
+					if (event.keyCode === 13) {
+						if (self.$content.find('.uid').val() == '')
+							self.$content.find('.uid').focus();
+						else
+							self.$content.find('.pwd').focus();
+					}
+				});
+				self.$content.find('.pwd').keyup(function (event) {
+					if (event.keyCode === 13) {
+						if (self.$content.find('.uid').val() == '')
+							this.$content.find('.uid').focus();
+						else if (self.$content.find('.pwd').val() == '')
+							this.$content.find('.pwd').focus();
+						else {
+							let x = $.find('.cmd-submit');
+							x[0].click();
+						}
+					}
+				});
 			},
 			buttons: {
 
 				yes: {
 					text: 'Login',
-					btnClass: 'btn-primary',
+					btnClass: 'btn-primary cmd-submit',
 					action: function () {
 						var login_data = {
 							action: 'login',
@@ -198,6 +225,18 @@
 							captcha: $('#txt-captcha').val(),
 							fp: visitorId
 						};
+						if (login_data.uid == '') {
+							bao_loi('Chưa nhập username', function () { $('#uid').focus(); });
+							return false;
+						}
+						if ($('#pwd').val() == '') {
+							bao_loi('Chưa nhập password', function () { $('#pwd').focus(); });
+							return false;
+						}
+						if (base64 && login_data.captcha == '') {
+							bao_loi('Chưa nhập captcha', function () { $('#txt-captcha').focus(); });
+							return false;
+						}
 						var sending_dialog = $.confirm({
 							title: "Đăng nhập",
 							content: "đang gửi...",
@@ -207,10 +246,14 @@
 							buttons: {
 								ok: {
 									text: 'Close',
-									btnClass: 'btn-danger',
+									keys: ['esc', 'c', 'x', 'enter'],
+									btnClass: 'btn-danger nut-ok-sending',
 									action: function () {
 									}
 								}
+							},
+							onContentReady: function () {
+								$('.nut-ok-sending').focus();
 							}
 						});
 						$.post(api, login_data, function (json) {
@@ -229,6 +272,15 @@
 								//GenerateSalt(); //sinh muối mới, ko cần nữa vì đã cho muối vào phản hồi login sai
 								sending_dialog.setTitle("Báo lỗi");
 								sending_dialog.setContent(json.msg);
+								//sending_dialog.onDestroy = function () {
+								//	if (json.msg.indexOf('captcha') >= 0) {
+								//		$('#txt-captcha').focus();
+								//	} else if (json.msg.indexOf('password') >= 0) {
+								//		$('#pwd').focus();
+								//	} else if (json.msg.indexOf('user') >= 0) {
+								//		$('#uid').focus();
+								//	}
+								//};
 								logined = false;
 								//ko đc đóng login
 							}
@@ -243,6 +295,7 @@
 					}
 				},
 			}
+
 		})
 	}
 
@@ -251,7 +304,13 @@
 			title: 'Báo lỗi',
 			content: msg,
 			autoClose: 'ok|3000',
-			buttons: { ok: {} },
+			buttons: {
+				ok: {
+					text: 'OK',
+					btnClass: 'btn-danger',
+					keys: ['esc', 'c', 'x', 'enter'],
+				}
+			},
 			onDestroy: function () {
 				callback()
 			}

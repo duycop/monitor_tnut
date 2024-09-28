@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace lib_captcha
 {
@@ -130,19 +131,30 @@ namespace lib_captcha
 
         }
 
+        Color getColor()
+        {
+            int[] COLOR = { 0x00FFFF, 0x7FFFD4, 0x0000FF, 0x8A2BE2, 0xA52A2A, 0xD2691E, 0xDC143C, 0x00FFFF, 0x00008B, 0x008B8B, 0x006400, 0x9932CC, 0x483D8B, 0x9400D3, 0x7CFC00, 0x00BFFF, 0xFF00FF, 0xADFF2F, 0x008000, 0xFF69B4, 0x20B2AA, 0x0000CD, 0x00FA9A, 0xFFE4E1, 0xFF4500, 0xFF0000, 0x4169E1, 0x00FF7F, 0x40E0D0, 0xFF6347 };
+            int p=_random.Next(0,COLOR.Length);
+            int c=COLOR[p];
+            Color color = Color.FromArgb(c>>16,c>>8&255,c&255);
+            return color;
+        }
+
         // Hàm vẽ ký tự lên ảnh
         private void DrawTextOnImage(Graphics g, string text, int width, int height)
         {
-            int MIN_COLOR = 0;
-            int MAX_COLOR = 255;
+            //int MIN_COLOR = 0;
+            //int MAX_COLOR = 255;
             string[] fonts = { "Arial", "Verdana","Segoe UI Black", "Tahoma" };
+            
             int x0 = 30;
             for (int i = 0; i < text.Length; i++)
             {
                 // Chọn font ngẫu nhiên
                 string fontName = fonts[_random.Next(fonts.Length)];
-                Font font = new Font(fontName, _random.Next(60, 70), FontStyle.Bold);
-                Color color = Color.FromArgb(_random.Next(MIN_COLOR, MAX_COLOR), _random.Next(MIN_COLOR, MAX_COLOR), _random.Next(MIN_COLOR, MAX_COLOR));
+                Font font = new Font(fontName, _random.Next(70, 90), FontStyle.Bold);
+                //Color color = Color.FromArgb(_random.Next(MIN_COLOR, MAX_COLOR), _random.Next(MIN_COLOR, MAX_COLOR), _random.Next(MIN_COLOR, MAX_COLOR));
+                Color color = getColor();
                 Brush brush = new SolidBrush(color);
 
                 int y0 = (height -  font.Height)/2-60;

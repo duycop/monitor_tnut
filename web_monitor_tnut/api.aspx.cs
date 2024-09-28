@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using lib_salt;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace web_monitor_tnut
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string salt;
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public int dem;
+            public int? dem;
 
         }
         string get_json_bao_loi(string msg, bool ok = false, string captcha = null, string salt = null)
@@ -170,7 +171,7 @@ namespace web_monitor_tnut
         {
             try
             {
-                LoginData m = (LoginData)this.Session["user-info"];
+                LoginData m = (LoginData)this.Session["user-info"]; //hàm check_logined
                 if (m.ok == 1)
                 {
                     string fp = this.Request.Form["fp"];
@@ -256,7 +257,7 @@ namespace web_monitor_tnut
                 json = db.login(uid, pwd); //pwd rõ ở đây
 
                 //chuyeern json -> obj LoginData
-                LoginData m = JsonConvert.DeserializeObject<LoginData>(json);
+                LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login
                 if (m.ok == 1)
                 {
                     //luu m vào session
@@ -305,10 +306,10 @@ namespace web_monitor_tnut
                 if (count_login_is_over())
                 {
                     //nếu quá số lần sai thì phải check captcha trước
-                    string captcha_user = this.Request.Form["captcha"];
-                    string captcha_server = (string)this.Session["captcha"];
+                    string captcha_user = this.Request.Form["captcha"].ToLower();
+                    string captcha_server = (string)this.Session["captcha"].ToString().ToLower();
                     //so sánh bỏ qua HOA thường
-                    return captcha_server.Equals(captcha_user, StringComparison.OrdinalIgnoreCase);
+                    return captcha_server.Equals(captcha_user, StringComparison.CurrentCultureIgnoreCase);
                 }
                 else
                 {
@@ -349,7 +350,7 @@ namespace web_monitor_tnut
                         json = db.get_user(uid); //lấy thông tin user theo uid, ko cần pwd
 
                         //chuyển json -> obj LoginData
-                        LoginData m = JsonConvert.DeserializeObject<LoginData>(json);
+                        LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login2
                         if (m.ok == 1)
                         {
                             m.fp = this.Request.Form["fp"];
@@ -361,7 +362,7 @@ namespace web_monitor_tnut
                     else
                     {
                         count_login_add(); //Mật khẩu sai rồi!
-                        string msg = $"Mật khẩu sai rồi!";
+                        string msg = $"Nhập password sai rồi!";
                         if (count_login_is_over())
                         {
                             json = json_captcha(msg);
@@ -426,7 +427,7 @@ namespace web_monitor_tnut
         {
             try
             {
-                LoginData m = (LoginData)this.Session["user-info"];
+                LoginData m = (LoginData)this.Session["user-info"]; //is_logined
                 return (m.ok == 1);
             }
             catch
@@ -442,18 +443,17 @@ namespace web_monitor_tnut
         }
         void GenerateSalt()
         {
-            string salt = get_salt();
-
+            string json;
             if (count_login_is_over())
             {
-                string json = json_captcha(salt, true);
-                this.Response.Write(json);
+                json = json_captcha("get new salt+captcha ok", true);
             }
             else
             {
-                string json = get_json_bao_loi(salt, true);
-                this.Response.Write(json);
+                string salt = get_salt();
+                json = get_json_bao_loi(msg: "new salt ok", ok: true, salt: salt);
             }
+            this.Response.Write(json);
         }
 
         protected void Page_Load(object sender, EventArgs e)
