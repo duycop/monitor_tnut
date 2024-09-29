@@ -1,7 +1,9 @@
 ﻿'use strict';
 
 var logined = false; //check việc đã login phía client
-
+var visitorId = '';
+var base64 = null;
+var user_info;
 const api = '/api.aspx';
 
 $(".toa-nha").draggable();
@@ -107,6 +109,196 @@ function change_status(idPhong, status, callback) {
 		'json');
 }
 
+function show_user(json) {
+	logined = true;
+	user_info = json;
+	//show info login thành công
+	$('#user-info').html('Welcome ' + json.name)
+	//hiện nút logout
+	$('.cmd-logout').removeClass('no-display');
+	//ẩn nút login
+	$('.cmd-login').addClass('no-display');
+}
+var my_salt = '';
+
+function show_captcha(json) {
+	if (json.captcha) {
+		base64 = json.captcha;
+		if ($('#img-captcha')) {
+			$('#captcha-zone').removeClass("no-display");
+			$('#img-captcha').attr("src", "data:image/png;base64," + base64);
+			$('#img-captcha').unbind('click').click(function () {
+				GenerateSalt();
+			});
+		}
+	} else {
+		base64 = null;
+	}
+}
+function GenerateSalt() {
+	$.post(api, { action: 'GenerateSalt' }, function (json) {
+		if (json.salt) {
+			my_salt = json.salt;
+			console.log('Lấy được muối: ' + my_salt);
+		}
+		show_captcha(json);
+	}, 'json');
+}
+function do_login() {
+	//lấy tí muối
+	GenerateSalt();
+	// Hàm tính toán SHA1
+	function sha1(input) {
+		return CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
+	}
+	// Hàm mã hóa mật khẩu
+	function hashPassword(password, salt) {
+		// Mã hóa: SHA1(SHA1(pw) + muối)
+		return sha1(sha1(password) + salt);
+	}
+	//html có chứa login form
+	var html_login_form = `<form class="was-validated">
+  <div class="mb-3 mt-3">
+    <input type="text" class="form-control uid" id="uid" placeholder="Enter username" name="uname" required>
+	<span class="valid-feedback">Username đã nhập phải chính xác nhé</span>
+    <span class="invalid-feedback">Hãy nhập username vào đi</span>
+  </div>
+  <div class="mb-3">
+    <input type="password" class="form-control pwd" id="pwd" placeholder="Enter password" name="pswd" required>
+	<span class="valid-feedback">Password nhập rồi nhưng phải đúng nhé.</span>
+    <span class="invalid-feedback">Hãy nhập password vào đi</span>
+  </div>
+  <div class="no-display" id="captcha-zone">
+	<img src="" id="img-captcha" class="pb-1" title="Click vào ảnh để tải nội dung mới" />
+    <input type="text" class="form-control" id="txt-captcha" placeholder="Enter text in image" name="txt-captcha" required>
+    <span class="valid-feedback">Captcha nhập giống ảnh nhé, click vào ảnh để tải nội dung mới</span>
+    <span class="invalid-feedback">Hãy nhập chữ trong ảnh vào đi, click vào ảnh để tải nội dung mới</span>
+  </div>
+</form>`;
+	var login_dialog = $.alert({
+		title: "Đăng nhập",
+		content: html_login_form,
+		columnClass: 's',
+		closeIcon: true,
+		onContentReady: function () {
+			if (base64 != null) {
+				show_captcha({ captcha: base64 })
+			}
+
+			$('.jconfirm-holder').width($('.jconfirm-open').width());
+			let self = this;
+			var uidck = self.$content.find('.uid').val();
+			if (uidck == '')
+				self.$content.find('.uid').focus();
+			else
+				self.$content.find('.pwd').focus();
+			self.$content.find('.uid').keyup(function (event) {
+				if (event.keyCode === 13) {
+					if (self.$content.find('.uid').val() == '')
+						self.$content.find('.uid').focus();
+					else
+						self.$content.find('.pwd').focus();
+				}
+			});
+			self.$content.find('.pwd').keyup(function (event) {
+				if (event.keyCode === 13) {
+					if (self.$content.find('.uid').val() == '')
+						this.$content.find('.uid').focus();
+					else if (self.$content.find('.pwd').val() == '')
+						this.$content.find('.pwd').focus();
+					else {
+						let x = $.find('.cmd-submit');
+						x[0].click();
+					}
+				}
+			});
+		},
+		buttons: {
+
+			yes: {
+				text: 'Login',
+				btnClass: 'btn-primary cmd-submit',
+				action: function () {
+					var login_data = {
+						action: 'login',
+						uid: $('#uid').val(),
+						pwd: hashPassword($('#pwd').val(), my_salt),
+						captcha: $('#txt-captcha').val(),
+						fp: visitorId
+					};
+					if (login_data.uid == '') {
+						bao_loi('Chưa nhập username', function () { $('#uid').focus(); });
+						return false;
+					}
+					if ($('#pwd').val() == '') {
+						bao_loi('Chưa nhập password', function () { $('#pwd').focus(); });
+						return false;
+					}
+					if (base64 && login_data.captcha == '') {
+						bao_loi('Chưa nhập captcha', function () { $('#txt-captcha').focus(); });
+						return false;
+					}
+					var sending_dialog = $.confirm({
+						title: "Đăng nhập",
+						content: "đang gửi...",
+						columnClass: 's',
+						closeIcon: true,
+						autoClose: 'ok|3000',
+						buttons: {
+							ok: {
+								text: 'Close',
+								keys: ['esc', 'c', 'x', 'enter'],
+								btnClass: 'btn-danger nut-ok-sending',
+								action: function () {
+								}
+							}
+						},
+						onContentReady: function () {
+							$('.nut-ok-sending').focus();
+						}
+					});
+					$.post(api, login_data, function (json) {
+						if (json.salt) {
+							my_salt = json.salt;
+							console.log("Lấy đc muối mới: " + json.salt)
+						}
+						show_captcha(json);
+						if (json.ok) {
+							show_user(json);
+							//đóng hộp thoại login lại
+							sending_dialog.setTitle("Đăng nhập thành công!");
+							sending_dialog.setContent("Chào mừng " + json.name + "<br>Lần đăng nhập trước: " + json.lastLogin);
+							login_dialog.close();
+						} else {
+							//GenerateSalt(); //sinh muối mới, ko cần nữa vì đã cho muối vào phản hồi login sai
+							sending_dialog.setTitle("Báo lỗi");
+							sending_dialog.setContent(json.msg);
+							//sending_dialog.onDestroy = function () {
+							//	if (json.msg.indexOf('captcha') >= 0) {
+							//		$('#txt-captcha').focus();
+							//	} else if (json.msg.indexOf('password') >= 0) {
+							//		$('#pwd').focus();
+							//	} else if (json.msg.indexOf('user') >= 0) {
+							//		$('#uid').focus();
+							//	}
+							//};
+							logined = false;
+							//ko đc đóng login
+						}
+					}, 'json');
+					return false; //ko đóng hộp thoại login lại
+				}
+			},
+			close: {
+				text: 'Close',
+				btnClass: 'btn-danger',
+				action: function () {
+				}
+			},
+		}
+
+	})
+}
 
 function bao_loi(msg, callback) {
 	$.alert({
@@ -298,9 +490,42 @@ function cap_nhat_trang_thai() {
 		})
 	}
 }
-
+function do_logout() {
+	$.post(api, { action: 'logout' }, function (json) {
+		if (json.ok) {
+			logined = false;
+			//ẩn thông tin
+			$('#user-info').html('');
+			//ẩn nút logout
+			$('.cmd-logout').addClass('no-display');
+			$('.cmd-login').removeClass('no-display');
+		}
+	}, 'json');
+}
+function check_logined(fp) {
+	$.post(api, { action: 'check_logined', fp: setting.fp }, function (json) {
+		if (json.ok) {
+			//đây chính là thông tin user hợp lệ
+			show_user(json);
+		}
+	}, 'json');
+}
+function load_fp(callback) {
+	// Tải FingerprintJS
+	FingerprintJS.load().then(fp => {
+		// Lấy fingerprint của trình duyệt
+		fp.get().then(json => {
+			visitorId = json.visitorId;
+			if (json.captcha) base64 = json.captcha; else base64 = null;
+			callback(visitorId);
+		});
+	});
+}
 
 export function main() {
+	load_fp(function (fp) { check_logined(fp); });
+	$('.cmd-login').click(function () { do_login(); });
+	$('.cmd-logout').click(function () { do_logout(); });
 	//F5 thì mất biết logined => ko có thông tin user, hide Logout
 	//mỗi vào trang thì hỏi api xem cookie chứa sid có ok ko?
 

@@ -57,6 +57,15 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <Content Include="asset\lib_log.js" />
+    <Content Include="webfonts\fa-brands-400.ttf" />
+    <Content Include="webfonts\fa-brands-400.woff2" />
+    <Content Include="webfonts\fa-regular-400.ttf" />
+    <Content Include="webfonts\fa-regular-400.woff2" />
+    <Content Include="webfonts\fa-solid-900.ttf" />
+    <Content Include="webfonts\fa-solid-900.woff2" />
+    <Content Include="webfonts\fa-v4compatibility.ttf" />
+    <Content Include="webfonts\fa-v4compatibility.woff2" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="api.aspx" />
@@ -64,12 +73,20 @@
     <Content Include="asset\bootstrap.min.css" />
     <Content Include="asset\callback-demo.js" />
     <Content Include="asset\crypto-js.min.js" />
+    <Content Include="asset\fontawesome.all.min.css" />
+    <Content Include="asset\fontawesome.min.css" />
     <Content Include="asset\fp.min.js" />
     <Content Include="asset\jquery-confirm.min.css" />
     <Content Include="asset\jquery-confirm.min.js" />
     <Content Include="asset\jquery-ui.min.css" />
     <Content Include="asset\jquery-ui.min.js" />
     <Content Include="asset\jquery.min.js" />
+    <Content Include="asset\lib_control.js" />
+    <Content Include="asset\lib_phong.js" />
+    <Content Include="asset\lib_role.js" />
+    <Content Include="asset\lib_user.js" />
+    <Content Include="asset\main.js" />
+    <Content Include="asset\mycode3 - Copy.js" />
     <Content Include="asset\mycode3.min.js" />
     <Content Include="asset\mycode3.js" />
     <Content Include="asset\mycode.js" />
@@ -110,6 +127,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\lib_log\lib_log.csproj">
+      <Project>{3be94114-d96f-4a99-89b3-12872b39f3b4}</Project>
+      <Name>lib_log</Name>
+    </ProjectReference>
     <ProjectReference Include="..\lib_phong\lib_phong.csproj">
       <Project>{f8ab6c3d-23ef-4a61-a5fa-9cd6e019e5a3}</Project>
       <Name>lib_phong</Name>

@@ -46,3 +46,9 @@
     .no-display{
         display:none;
     }
+
+#table-control-panel td.space {
+    padding-bottom: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+}

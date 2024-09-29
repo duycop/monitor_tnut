@@ -8,6 +8,7 @@ namespace web_monitor_tnut
         private string cnstr;
         private lib_user.User user;
         private lib_phong.Phong phong;
+        private lib_log.Log log;
         public api()
         {
             //hàm tạo, đọc lấy chuỗi kết nối trong file cấu hình
@@ -16,7 +17,6 @@ namespace web_monitor_tnut
         void init_objects()
         {
             user = new lib_user.User(this, cnstr);
-            phong = new lib_phong.Phong(this, user, cnstr);
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -29,6 +29,7 @@ namespace web_monitor_tnut
                 case "get_all_status":
                 case "get_history":
                 case "change_status":
+                    phong = new lib_phong.Phong(this, user, cnstr);
                     phong.Run(action);
                     break;
 
@@ -36,7 +37,15 @@ namespace web_monitor_tnut
                 case "login":
                 case "logout":
                 case "GenerateSalt":
+
+                case "get_list_role":
+                case "get_list_user":
                     user.Run(action);
+                    break;
+
+                case "get_log":
+                    log = new lib_log.Log(this, user, cnstr);
+                    log.Run(action);
                     break;
 
                 default:

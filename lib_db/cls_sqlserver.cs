@@ -29,6 +29,13 @@ namespace lib_db
                 return (T)result; //ép sang string, đây là json
             }
         }
+        public string get_json(string action)
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                return (string)get_value<string>(action, cmd);
+            }
+        }
         public string get_json(string action, SqlCommand cmd)
         {
             return (string)get_value<string>(action, cmd);

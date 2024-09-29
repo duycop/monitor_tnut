@@ -65,11 +65,8 @@ namespace lib_phong
         }
         private string db_get_all_status()
         {
-            using (SqlCommand cmd = new SqlCommand())
-            {
-                string json = db.get_json("get_all_status", cmd);
-                return json;
-            }
+            string json = db.get_json("get_all_status");
+            return json;
         }
         private string db_get_history(int idPhong)
         {

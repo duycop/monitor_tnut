@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Web;
 using System.Web.SessionState;
+using Newtonsoft.Json.Serialization;
 
 namespace lib_user
 {
@@ -15,7 +16,7 @@ namespace lib_user
         private const int MAX_COUNT_LOGIN = 3;
 
         public string cnstr;
-        
+
         private HttpRequest Request;
         private HttpSessionState Session;
         private HttpResponse Response;
@@ -23,9 +24,9 @@ namespace lib_user
 
         public User(System.Web.UI.Page papa, string cnstr)
         {
-            this.Request=papa.Request;
-            this.Session=papa.Session;
-            this.Response=papa.Response;
+            this.Request = papa.Request;
+            this.Session = papa.Session;
+            this.Response = papa.Response;
             this.cnstr = cnstr;
             db = get_db(); //tạo sẵn db ở hàm tạo
         }
@@ -34,6 +35,7 @@ namespace lib_user
         {
             public int ok { get; set; }
             public string uid { get; set; }
+            public int role { get; set; }
             public string name { get; set; }
             public string fp { get; set; }
         }
@@ -141,11 +143,11 @@ namespace lib_user
             using (SqlCommand cmd = new SqlCommand())
             {
                 cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
-                storedHash=db.get_bytes("GetStoredPasswordHash", cmd);
-            } 
+                storedHash = db.get_bytes("GetStoredPasswordHash", cmd);
+            }
             return storedHash;
         }
-       
+
         private void count_login_reset()
         {
             this.Session[COUNT_LOGIN] = 0;
@@ -191,34 +193,50 @@ namespace lib_user
             int dem = get_count_login();
             return dem >= MAX_COUNT_LOGIN;
         }
-        private void login()
-        {
-            string json = "";
-            try
-            {
-                string uid = this.Request.Form["uid"];
-                string pwd = this.Request.Form["pwd"]; //pwd rõ
-                json = db_login(uid, pwd); //pwd rõ ở đây
-                LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login
-                if (m.ok == 1)
-                {
-                    this.Session["user-info"] = m; //lưu m vào session
-                    count_login_reset();
-                }
-                else
-                {
 
-                }
-            }
-            catch (Exception ex)
+        private LoginData get_user_logined()
+        {
+            object obj = this.Session["user-info"];
+            if (obj != null)
             {
-                json = get_json_bao_loi($"Error: {ex.Message}");
+                LoginData m = (LoginData)obj;
+                return m;
             }
-            finally
+            else
             {
-                this.Response.Write(json);
+                return null;
             }
         }
+
+        //hàm login : so sánh hash trong db và hash nhập vào
+        //private void login()
+        //{
+        //    string json = "";
+        //    try
+        //    {
+        //        string uid = this.Request.Form["uid"];
+        //        string pwd = this.Request.Form["pwd"]; //pwd rõ
+        //        json = db_login(uid, pwd); //pwd rõ ở đây
+        //        LoginData m = JsonConvert.DeserializeObject<LoginData>(json); //hàm login
+        //        if (m.ok == 1)
+        //        {
+        //            this.Session["user-info"] = m; //lưu m vào session
+        //            count_login_reset();
+        //        }
+        //        else
+        //        {
+
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        json = get_json_bao_loi($"Error: {ex.Message}");
+        //    }
+        //    finally
+        //    {
+        //        this.Response.Write(json);
+        //    }
+        //}
         private string get_captcha_base64()
         {
             lib_captcha.CaptchaGenerator captcha = new lib_captcha.CaptchaGenerator();
@@ -260,6 +278,8 @@ namespace lib_user
                 return false;//trong quá trình kiểm tra mà có lỗi gì thì coi như nhập sai
             }
         }
+
+        //hàm check pwd hash: ko cần lưu mk rõ ở cả 2 phía client và db => Vẫn check đc pw có xịn ko
         private void login_hash()
         {
             string json = "";
@@ -390,6 +410,49 @@ namespace lib_user
             }
             this.Response.Write(json);
         }
+        void get_list_role()
+        {
+            string json = "";
+            try
+            {
+                json = db.get_json("get_list_role");
+            }
+            catch (Exception ex)
+            {
+                json = get_json_bao_loi($"Error: {ex.Message}");
+            }
+            finally
+            {
+                this.Response.Write(json);
+            }
+        }
+        void get_list_user()
+        {
+            string json = "";
+            try
+            {
+                LoginData m = get_user_logined();
+                if (m != null && m.role>1)
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        json = db.get_json("get_list_user", cmd);
+                    }
+                }
+                else
+                {
+                    json = get_json_bao_loi("Chỉ dành cho Admin");
+                }
+            }
+            catch (Exception ex)
+            {
+                json = get_json_bao_loi($"Error: {ex.Message}");
+            }
+            finally
+            {
+                this.Response.Write(json);
+            }
+        }
         public void Run(string action)
         {
             switch (action)
@@ -409,8 +472,19 @@ namespace lib_user
                     GenerateSalt();
                     break;
 
-                default:
-                    bao_loi("Lỗi rồi nhé, kiểm tra lại action!");
+                case "get_list_role":
+                    get_list_role();
+                    break;
+
+                case "get_list_user":
+                    if (this.is_logined())
+                    {
+                        get_list_user();
+                    }
+                    else
+                    {
+                        bao_loi("Chưa login thì ko xem được ds user!");
+                    }
                     break;
             }
         }

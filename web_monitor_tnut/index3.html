@@ -38,8 +38,10 @@
     <script src="asset/fp.min.js"></script>
 
     <!--2 file tự chế để tạo css và viết code js-->
+    <link href="asset/fontawesome.all.min.css" rel="stylesheet" />
     <link href="asset/mystyle3.css" rel="stylesheet" />
-    <script src="asset/mycode3.js"></script>
+    <!--<script src="asset/mycode3.js"></script>-->
+    <script type="module" src="/asset/main.js"></script>
 </head>
 <body>
     <div class="container mt-3">
@@ -50,8 +52,9 @@
             <a class="btn btn-warning" href="index2.html">UI2</a>
             <a class="btn btn-danger" href="index3.html">UI3</a>
             <span id="user-info"></span>
-            <button class="btn btn-info cmd-login">Login</button>
-            <button class="btn btn-danger no-display cmd-logout">Logout</button>
+            <button class="btn btn-info cmd-login" title="Login"><i class="fa fa-key"></i></button>
+            <button class="btn btn-info no-display cmd-control-panel" title="Setting"><i class="fa fa-sliders"></i></button>
+            <button class="btn btn-danger no-display cmd-logout" title="Logout"><i class="fa fa-right-from-bracket"></i></button>
         </div>
 
         <div class="row">
