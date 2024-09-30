@@ -30,12 +30,7 @@ export const setting = {
 			title: 'Xem log hệ thống',
 			class: 'btn btn-primary cmd-man-log',
 			action: function (dialog, item) {
-				import('/asset/lib_log.js').then(module => {
-					lib = lib || {};
-					lib.log = module;
-					module.set_lib(lib);
-					module.main();
-				});
+				lib.log.show_log();
 			}
 		}
 	}

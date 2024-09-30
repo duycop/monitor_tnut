@@ -8,6 +8,15 @@ namespace lib_salt
 {
     public class PasswordHasher
     {
+        public static byte[] sha1(string input)
+        {
+            using(SHA1 sha1 = SHA1.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(input);
+                byte[] hash = sha1.ComputeHash(bytes);
+                return hash;
+            }
+        }
         private static string get_server_pwd_hash(byte[] dbPwdSha1, string salt)
         {
             string dbPwdHex = BitConverter.ToString(dbPwdSha1).Replace("-", "").ToLower();

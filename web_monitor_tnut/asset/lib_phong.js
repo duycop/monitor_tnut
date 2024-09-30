@@ -25,7 +25,6 @@ export const setting = {
 	MAP: {},
 	THONG_KE: { 1: 0, 2: 0, 3: 0 }
 };
-
 function set_status(item, p) {
 	if (p.status == 1) {
 		$(item).removeClass(setting.STATUS[2]).removeClass(setting.STATUS[3]).addClass(setting.STATUS[1]).attr('title', 'Phòng ' + p.name + ' đang không học');
@@ -107,14 +106,13 @@ function change_status(idPhong, status, callback) {
 				thong_ke_lai();
 				callback(json);
 			} else {
-				lib.user.setting.logined = false;
+				//lib.user.setting.logined = false; //đây là bug, bỏ nó đi
 				bao_loi(json.msg);
 			}
 		},
 		'json');
 }
-
-function bao_loi(msg, callback) {
+function bao_loi(msg, callback = null) {
 	$.alert({
 		title: 'Báo lỗi',
 		content: msg,
@@ -133,15 +131,12 @@ function bao_loi(msg, callback) {
 			}
 		},
 		onDestroy: function () {
-			callback()
+			if (callback != null) callback()
 		}
 	});
 }
 //khi nào gọi hàm này?
 //khi click vào 1 phòng, phòng đang ở class nào?? .phong-hoc
-
-
-
 function get_history(idPhong) {
 	function _get_history(idPhong, callback) {
 		$.post(api,
@@ -159,10 +154,11 @@ function get_history(idPhong) {
 			//hậu xử lý ra html: đi ăn sáng đã: kệ nó quay
 			//đã ăn xong, vào làm tiếp
 			html = '<div class="table-responsive" style="height-max:100px">' +
-				'<table class="table table-hover"><thead>' +
+				'<table class="table table-hover" id="table-history-phong"><thead>' +
 				'<tr class="table-info">' +
 				'<th>STT</th>' +
 				'<th>Trạng thái</th>' +
+				'<th>Người thay đổi</th>' +
 				'<th>Thời gian</th>' +
 				'</tr>' +
 				'</thead><tbody>';
@@ -173,6 +169,7 @@ function get_history(idPhong) {
 					html += '<tr>' +
 						`<td>${stt--}</td>` +
 						`<td>${setting.TITLE[row.status]}</td>` +
+						`<td>${row.by}</td>` +
 						`<td>${row.time}</td>` +
 						'</tr>';
 				}
@@ -217,7 +214,7 @@ function get_history(idPhong) {
 			closeAnimation: 'rotateXR',
 			animationBounce: 1.5,
 			animateFromElement: false,
-			columnClass: 'm',
+			columnClass: 'l',
 			closeIcon: true,
 			buttons: {
 				fix: {
@@ -268,14 +265,16 @@ function get_history(idPhong) {
 						this.close();
 					}
 				}
-			}
+			},
+			onContentReady: function () {
+				lib.table.sort_table('#table-history-phong', "Log history " + setting.MAP[idPhong].name, 10);
+			},
 		});
 
 	};
 
 	_get_history(idPhong, show_history)
 }
-
 function get_status(key, callback) {
 	var day_nha = setting.TNUT[key];
 	var ok = false;
@@ -326,7 +325,6 @@ function show_thong_ke() {
 	var html = boc("Đang học", "bg-info", setting.THONG_KE[2]) + boc("Trống", "bg-warning", setting.THONG_KE[1]) + boc("Sửa", "bg-danger", setting.THONG_KE[3]);
 	$('#thong-ke').html(html);
 }
-
 function cap_nhat_trang_thai() {
 	for (var key in setting.TNUT) {
 		get_status(key, function (key) {
@@ -334,7 +332,6 @@ function cap_nhat_trang_thai() {
 		})
 	}
 }
-
 export function main() {
 	//F5 thì mất biết logined => ko có thông tin user, hide Logout
 	//mỗi vào trang thì hỏi api xem cookie chứa sid có ok ko?

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using static lib_user.User;
 
 namespace web_monitor_tnut
 {
@@ -17,6 +18,16 @@ namespace web_monitor_tnut
         void init_objects()
         {
             user = new lib_user.User(this, cnstr);
+            phong = new lib_phong.Phong(this, user, cnstr);
+            log = new lib_log.Log(this, user, cnstr);
+            user.add_log += (string key, string msg) =>
+            {
+                log.add_log(key, msg);
+            };
+            phong.add_log += (string key, string msg) =>
+            {
+                log.add_log(key, msg);
+            };
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -29,7 +40,6 @@ namespace web_monitor_tnut
                 case "get_all_status":
                 case "get_history":
                 case "change_status":
-                    phong = new lib_phong.Phong(this, user, cnstr);
                     phong.Run(action);
                     break;
 
@@ -40,16 +50,16 @@ namespace web_monitor_tnut
 
                 case "get_list_role":
                 case "get_list_user":
+                case "add_user":
                     user.Run(action);
                     break;
 
                 case "get_log":
-                    log = new lib_log.Log(this, user, cnstr);
                     log.Run(action);
                     break;
 
                 default:
-                    user.bao_loi("Lỗi rồi nhé, kiểm tra lại action!");
+                    user.bao_loi("Lỗi báo từ API: Hãy kiểm tra lại action="+action);
                     break;
             }
         }

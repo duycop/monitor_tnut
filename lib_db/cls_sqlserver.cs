@@ -6,6 +6,7 @@ using System.Text;
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.SqlServer.Server;
+using System.Security.Cryptography;
 
 namespace lib_db
 {
@@ -43,6 +44,11 @@ namespace lib_db
         public byte[] get_bytes(string action, SqlCommand cmd)
         {
             return (byte[])get_value<byte[]>(action, cmd);
+        }
+
+        public int get_int(string action, SqlCommand cmd)
+        {
+            return (int)get_value<int>(action, cmd);
         }
     }
 }

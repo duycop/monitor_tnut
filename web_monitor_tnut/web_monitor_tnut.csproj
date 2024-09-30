@@ -49,6 +49,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="WebForm1.aspx" />
     <None Include="icon\manifest.json" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
@@ -57,7 +58,13 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <Content Include="asset\datatables.min.css" />
+    <Content Include="asset\datatables.min.js" />
     <Content Include="asset\lib_log.js" />
+    <Content Include="asset\lib_table.js" />
+    <Content Include="asset\lib_toastr.js" />
+    <Content Include="asset\toastr.min.css" />
+    <Content Include="asset\toastr.min.js" />
     <Content Include="webfonts\fa-brands-400.ttf" />
     <Content Include="webfonts\fa-brands-400.woff2" />
     <Content Include="webfonts\fa-regular-400.ttf" />
@@ -125,6 +132,13 @@
       <DependentUpon>api.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebForm1.aspx.cs">
+      <DependentUpon>WebForm1.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WebForm1.aspx.designer.cs">
+      <DependentUpon>WebForm1.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib_log\lib_log.csproj">

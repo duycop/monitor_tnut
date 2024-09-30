@@ -25,6 +25,26 @@ namespace lib_phong
             this.cnstr = cnstr;
             db = get_db();
         }
+
+        // 1. Khai báo delegate với hai tham số kiểu string
+        public delegate void AddLogHandler(string key, string msg);
+
+        // 2. Khai báo event dựa trên delegate
+        public event AddLogHandler add_log;
+
+        // 3. Phương thức dùng để kích hoạt (raise) event
+        protected virtual void OnAddLog(string key, string msg)
+        {
+            // Kiểm tra nếu có hàm nào đã đăng ký với event
+            add_log?.Invoke(key, msg);  // Thực hiện callback cho các hàm đã đăng ký
+        }
+
+        // Một phương thức có thể gọi khi cần log
+        public void Log(string key, string message)
+        {
+            // Kích hoạt event add_log
+            OnAddLog(key, message);
+        }
         class PhanHoi
         {
             [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -78,12 +98,13 @@ namespace lib_phong
             }
         }
 
-        private string db_change_status(int idPhong, int status)
+        private string db_change_status(int idPhong, int status, string uid)
         {
             using (SqlCommand cmd = new SqlCommand())
             {
                 cmd.Parameters.Add("idPhong", SqlDbType.Int).Value = idPhong;
                 cmd.Parameters.Add("status", SqlDbType.Int).Value = status;
+                cmd.Parameters.Add("uid", SqlDbType.VarChar,50).Value = uid;
                 string json = db.get_json("change_status", cmd);
                 return json;
             }
@@ -144,9 +165,16 @@ namespace lib_phong
             string json = "";
             try
             {
-                int idPhong = int.Parse(this.Request.Form["idPhong"]);
-                int status = int.Parse(this.Request.Form["status"]);
-                json = db_change_status(idPhong, status);
+                if (user.have_role(2))
+                {
+                    int idPhong = int.Parse(this.Request.Form["idPhong"]);
+                    int status = int.Parse(this.Request.Form["status"]);
+                    json = db_change_status(idPhong, status, user.uid);
+                }
+                else
+                {
+                    json = get_json_bao_loi($"Không đủ quyền!");
+                }
             }
             catch (Exception ex)
             {

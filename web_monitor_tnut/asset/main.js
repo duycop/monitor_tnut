@@ -3,7 +3,7 @@
 let lib = {};
 window.lib = lib;
 function load(name, callback = null) {
-	import('/asset/lib_'+name+'.js?rnd=5').then(module => {
+	import('/asset/lib_'+name+'.js?r=1321').then(module => {
 		lib = lib || {};
 		lib[name] = module;
 		module.set_lib(lib);
@@ -12,6 +12,9 @@ function load(name, callback = null) {
 	});
 }
 load('user', function () {
+	load('toastr');
+	load('log');
+	load('table');
 	load('phong');
 	load('control');
 });

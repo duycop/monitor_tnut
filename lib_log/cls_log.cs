@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Text;
 using System.Web;
 using System.Web.SessionState;
@@ -35,7 +37,54 @@ namespace lib_log
         }
         void get_log()
         {
-
+            string json = "";
+            try
+            {
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    json = db.get_json("get_log", cmd);
+                }
+            }
+            catch (Exception ex)
+            {
+                json = get_json_bao_loi($"Error: {ex.Message}");
+            }
+            finally
+            {
+                this.Response.Write(json);
+            }
+        }
+        private class PhanHoi
+        {
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public bool ok;
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public string msg;
+        }
+        public string get_json_bao_loi(string msg, bool ok = false, string captcha = null, string salt = null)
+        {
+            PhanHoi p = new PhanHoi();
+            p.ok = ok;
+            p.msg = msg;
+            return JsonConvert.SerializeObject(p);
+        }
+        public string add_log(string key, string msg)
+        {
+            string json = "";
+            try
+            {
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    cmd.Parameters.AddWithValue("key", key);
+                    cmd.Parameters.AddWithValue("msg", msg);
+                    json = db.get_json("add_log", cmd);
+                }
+            }
+            catch (Exception ex)
+            {
+                json = get_json_bao_loi($"Error: {ex.Message}");
+            }
+            return json;
         }
         public void Run(string action)
         {

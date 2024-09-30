@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Web;
 using System.Web.SessionState;
 using Newtonsoft.Json.Serialization;
+using lib_salt;
+using System.Text;
 
 namespace lib_user
 {
@@ -31,12 +33,67 @@ namespace lib_user
             db = get_db(); //tạo sẵn db ở hàm tạo
         }
 
+        // 1. Khai báo delegate với hai tham số kiểu string
+        public delegate void AddLogHandler(string key, string msg);
+
+        // 2. Khai báo event dựa trên delegate
+        public event AddLogHandler add_log;
+
+        // 3. Phương thức dùng để kích hoạt (raise) event
+        protected virtual void OnAddLog(string key, string msg)
+        {
+            // Kiểm tra nếu có hàm nào đã đăng ký với event
+            add_log?.Invoke(key, msg);  // Thực hiện callback cho các hàm đã đăng ký
+        }
+
+        // Một phương thức có thể gọi khi cần log
+        public void Log(string key, string message)
+        {
+            // Kích hoạt event add_log
+            OnAddLog(key, message);
+        }
+
+        public string uid
+        {
+            get
+            {
+                try
+                {
+                    LoginData m = (LoginData)this.Session["user-info"]; //is_logined
+                    return m.uid;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            private set { }
+        }
+        public int role
+        {
+            get
+            {
+                try
+                {
+                    LoginData m = (LoginData)this.Session["user-info"]; //is_logined
+                    return m.role;
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+            private set { }
+        }
+
         private class LoginData
         {
             public int ok { get; set; }
             public string uid { get; set; }
             public int role { get; set; }
             public string name { get; set; }
+            public string lastLogin { get; set; }
+            public string roleName { get; set; }
             public string fp { get; set; }
         }
 
@@ -117,16 +174,16 @@ namespace lib_user
 
         }
 
-        private string db_login(string uid, string pwd)
-        {
-            using (SqlCommand cmd = new SqlCommand())
-            {
-                cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
-                cmd.Parameters.Add("pwd", SqlDbType.VarChar, 50).Value = pwd;
-                string json = db.get_json("login", cmd);
-                return json;
-            }
-        }
+        //private string db_login(string uid, string pwd)
+        //{
+        //    using (SqlCommand cmd = new SqlCommand())
+        //    {
+        //        cmd.Parameters.Add("uid", SqlDbType.VarChar, 50).Value = uid;
+        //        cmd.Parameters.Add("pwd", SqlDbType.VarChar, 50).Value = pwd;
+        //        string json = db.get_json("login", cmd);
+        //        return json;
+        //    }
+        //}
         private string db_get_user(string uid)
         {
             using (SqlCommand cmd = new SqlCommand())
@@ -293,6 +350,7 @@ namespace lib_user
                     count_login_add();
                     //mỗi lần nhập sai là lại sinh ra ảnh mới
                     json = json_captcha("Nhập sai captcha!");
+                    this.Log($"Login error captcha", $"{uid}: Nhập sai captcha");
                     return;
                 }
 
@@ -313,12 +371,14 @@ namespace lib_user
                             //lưu m vào session
                             this.Session["user-info"] = m;
                             count_login_reset();
+                            this.Log($"Login OK", $"{uid}: {m.name}, Last Login: {m.lastLogin}");
                         }
                     }
                     else
                     {
                         count_login_add(); //Mật khẩu sai rồi!
                         string msg = $"Nhập password sai rồi!";
+                        this.Log($"Login error password", $"{uid}: Nhập password sai rồi!");
                         if (count_login_is_over())
                         {
                             json = json_captcha(msg);
@@ -333,6 +393,7 @@ namespace lib_user
                 {
                     count_login_add(); //Không tồn tại user
                     string msg = $"Không tồn tại user này!";
+                    this.Log($"Login error user", $"Không tồn tại user: {uid}");
                     if (count_login_is_over())
                     {
                         json = json_captcha(msg);
@@ -346,6 +407,7 @@ namespace lib_user
             catch (Exception ex)
             {
                 count_login_add(); //login Exception
+                this.Log($"Login Exception", $"{ex.Message}");
                 string msg = $"Error: {ex.Message}";
                 if (count_login_is_over())
                 {
@@ -364,6 +426,7 @@ namespace lib_user
 
         public void logout()
         {
+            Log("Logout", $"{uid} thoát!");
             this.Session["user-info"] = null; //cho ăn chắc
             this.Session.Abandon(); //huỷ mọi thứ của ngăn kéo này
                                     //luôn thành công
@@ -384,6 +447,19 @@ namespace lib_user
             {
                 LoginData m = (LoginData)this.Session["user-info"]; //is_logined
                 return (m.ok == 1);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool have_role(int role)
+        {
+            try
+            {
+                LoginData m = (LoginData)this.Session["user-info"]; //is_logined
+                return (m.ok == 1 && m.role >= role);
             }
             catch
             {
@@ -432,11 +508,50 @@ namespace lib_user
             try
             {
                 LoginData m = get_user_logined();
-                if (m != null && m.role>1)
+                if (m != null && m.role > 1)
                 {
                     using (SqlCommand cmd = new SqlCommand())
                     {
                         json = db.get_json("get_list_user", cmd);
+                    }
+                }
+                else
+                {
+                    json = get_json_bao_loi("Chỉ dành cho Admin");
+                }
+            }
+            catch (Exception ex)
+            {
+                json = get_json_bao_loi($"Error: {ex.Message}");
+            }
+            finally
+            {
+                this.Response.Write(json);
+            }
+        }
+        void add_user()
+        {
+            string json = "";
+            try
+            {
+                LoginData m = get_user_logined();
+                if (m != null && m.role > 1)
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        byte[] pwd = lib_salt.PasswordHasher.sha1(this.Request.Form["pwd"]);
+                        cmd.Parameters.AddWithValue("uid", this.Request.Form["uid"]);
+                        cmd.Parameters.AddWithValue("pwd", pwd);
+                        cmd.Parameters.AddWithValue("name", this.Request.Form["name"]);
+                        int role = int.Parse(this.Request.Form["role"]);
+                        if (role >= this.role)
+                        {
+                            role = this.role - 1;
+                        }
+                        if (role < 1) role = 1;
+
+                        cmd.Parameters.AddWithValue("role", role);
+                        json = db.get_json("add_user", cmd);
                     }
                 }
                 else
@@ -484,6 +599,17 @@ namespace lib_user
                     else
                     {
                         bao_loi("Chưa login thì ko xem được ds user!");
+                    }
+                    break;
+
+                case "add_user":
+                    if (this.is_logined())
+                    {
+                        add_user();
+                    }
+                    else
+                    {
+                        bao_loi("Chưa login thì không add được!");
                     }
                     break;
             }

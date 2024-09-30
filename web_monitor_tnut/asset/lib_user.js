@@ -48,18 +48,18 @@ function GenerateSalt() {
 		show_captcha(json);
 	}, 'json');
 }
+// Hàm tính toán SHA1
+export function sha1(input) {
+	return CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
+}
+// Hàm mã hóa mật khẩu
+export function hashPassword(password, salt) {
+	// Mã hóa: SHA1(SHA1(pw) + muối)
+	return sha1(sha1(password) + salt);
+}
 export function do_login() {
 	//lấy tí muối
 	GenerateSalt();
-	// Hàm tính toán SHA1
-	function sha1(input) {
-		return CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
-	}
-	// Hàm mã hóa mật khẩu
-	function hashPassword(password, salt) {
-		// Mã hóa: SHA1(SHA1(pw) + muối)
-		return sha1(sha1(password) + salt);
-	}
 	//html có chứa login form
 	var html_login_form = `<form class="was-validated">
   <div class="mb-3 mt-3">
@@ -158,10 +158,13 @@ export function do_login() {
 							show_user(json);
 							//đóng hộp thoại login lại
 							login_dialog.close();
+							var content = 'Chào mừng ' + json.name + '<hr>Lần đăng nhập trước:<br><i class="fa-regular fa-clock"></i> ' + json.lastLogin;
+							var title = 'Đăng nhập thành công!';
+							lib.toastr.tip('info', title, content);
 							$.confirm({
-								title: 'Đăng nhập thành công!',
+								title: title,
+								content: content,
 								icon: 'fa-solid fa-lock-open',
-								content: 'Chào mừng ' + json.name + '<hr>Lần đăng nhập trước:<br><i class="fa-regular fa-clock"></i> ' + json.lastLogin,
 								columnClass: 's',
 								type: 'blue',
 								animation: 'rotateYR',
@@ -298,7 +301,96 @@ export function main() {
 	get_list_role();
 }
 function add_user(dialog_papa) {
-	$.alert('code add_user here');
+	function form_add_user() {
+		var all_option_roles = '';
+		for (var item of setting.role) {
+			if (item.id < setting.user_info.role)
+				all_option_roles += '<option value="' + item.id + '">' + item.roleName + ' - ' + item.note + '</option>'
+		}
+		var html = `
+			<div class="mb-3 mt-3">
+			  <label for="nhap-uid" class="form-label">uid:</label>
+			  <input type="text" class="form-control" id="nhap-uid" placeholder="Enter uid">
+			</div>
+			<div class="mb-3 mt-3">
+			  <label for="nhap-pwd" class="form-label">Password:</label>
+			  <input type="password" class="form-control" id="nhap-pwd" placeholder="Enter Password">
+			</div>
+			<div class="mb-3 mt-3">
+			  <label for="nhap-fullname" class="form-label">Fullname:</label>
+			  <input type="text" class="form-control" id="nhap-fullname" placeholder="Enter Fullname">
+			</div>
+			<div class="mb-3 mt-3">
+			  <label for="nhap-role" class="form-label">Role:</label>
+			  <select class="form-select" id="nhap-role">${all_option_roles}</select>
+			</div>
+			`;
+		return html;
+	}
+	function do_add_user() {
+		var data = {
+			action: 'add_user',
+			uid: $('#nhap-uid').val(),
+			pwd: $('#nhap-pwd').val(),
+			name: $('#nhap-fullname').val(),
+			role: $('#nhap-role').val()
+		}
+		if (data.uid == '') {
+			bao_loi('Chưa nhập uid', function () { $('#nhap-uid').focus(); });
+			return;
+		}
+		if (data.pwd == '') {
+			bao_loi('Chưa nhập pwd', function () { $('#nhap-pwd').focus(); });
+			return;
+		}
+		if (data.name == '') {
+			bao_loi('Chưa nhập name', function () { $('#nhap-name').focus(); });
+			return;
+		}
+
+		$.post(api, data,
+			function (json) {
+				if (json.ok) {
+					lib.toastr.tip('info', 'Thông báo', 'Đã add user thành công');
+					get_list_user(dialog_papa); //tải lại ds user
+					dialog_add.close(); //đóng thằng dialog_add lại
+				} else {
+					bao_loi(json.msg);//báo lỗi khi add_user
+				}
+			}, 'json'
+		);//end $.post
+	}
+	var dialog_add = $.confirm({
+		title: 'Add user',
+		icon: 'fa-solid fa-user-plus',
+		type: 'blue',
+		content: form_add_user(this),
+		animation: 'rotateYR',
+		closeAnimation: 'rotateYR',
+		animationBounce: 1.5,
+		animateFromElement: false,
+		columnClass: 's',
+		closeIcon: true,
+		buttons: {
+			add: {
+				text: '<i class="fa-solid fa-user-plus"></i> Add',
+				btnClass: 'btn-primary',
+				action: function () {
+					do_add_user();
+					return false; //ko đóng
+				}
+			},
+			cancel: {
+				text: '<i class="fa fa-circle-xmark"></i> Cancel',
+				btnClass: 'btn-danger',
+				action: function () {
+				}
+			}
+		},
+		onContentReady: function () {
+
+		}
+	});
 }
 function gen_html_list_user(json) {
 	var html = '<div class="table-responsive-sm">' +
