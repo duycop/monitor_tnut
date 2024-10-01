@@ -35,6 +35,7 @@ Dành cho cả lớp, làm chung 1 đề!
   2. Quá trình làm push code lên github.
   3. Ghi lại thuật toán, các bước làm, các thất bại và thành công trong quá trình làm ra file readme.md
   4. VIDEO QUÁ TRÌNH LÀM: UPLAOPD YOUTUBE, **PASTE LINK VIDEO VÀO README.MD** ĐỂ TỪ GITHUB TRUY CẬP ĐƯỢC LUÔN.
+  5. Link của repository github để private, share với thầy, link paste [Excel online này](https://docs.google.com/spreadsheets/d/1I5CjD4tDEX_gIaOB9UwCMqXJEHihkibVGggCYwWhYv0/edit)
 
 **Deadline**
   - 23:59:59 ngày 01/10/2024.
