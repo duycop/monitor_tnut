@@ -17,18 +17,13 @@ export const setting = {
 			name: '<i class="fa-solid fa-gear"></i> Setting',
 			title: 'Quản lý cấu hình',
 			class: 'btn btn-info cmd-man-setting',
-			action: function (dialog, item) { lib.user.manager(dialog, item); }
+			action: function (dialog, item) { $.alert('Code managger setting here') }
 		},
-		setting2: {
-			name: '<i class="fa-solid fa-gear"></i> Setting2',
-			title: 'Quản lý cấu hình2',
-			class: 'btn btn-primary cmd-man-setting2',
-			action: function (dialog, item) { lib.user.manager(dialog, item); }
-		},
+		
 		log: {
 			name: '<i class="fa-solid fa-clock-rotate-left"></i> Log',
 			title: 'Xem log hệ thống',
-			class: 'btn btn-primary cmd-man-log',
+			class: 'btn btn-warning cmd-man-log',
 			action: function (dialog, item) {
 				lib.log.show_log();
 			}

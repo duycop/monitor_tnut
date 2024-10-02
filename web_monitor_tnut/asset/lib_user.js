@@ -1,9 +1,7 @@
 ﻿'use strict';
 let lib = {};
 export function set_lib(L) { lib = L; }
-
 const api = '/api.aspx';
-
 export const setting = {
 	logined: false,
 	fp: '',
@@ -12,7 +10,6 @@ export const setting = {
 	my_salt: '',
 	role: {}
 }
-
 function show_user(json) {
 	setting.logined = true;
 	setting.user_info = json;
@@ -24,7 +21,6 @@ function show_user(json) {
 	$('.cmd-login').addClass('no-display');
 	lib.control.main();
 }
-
 function show_captcha(json) {
 	if (json.captcha) {
 		setting.base64 = json.captcha;
@@ -212,7 +208,6 @@ export function do_login() {
 
 	})
 }
-
 function bao_loi(msg, callback = null) {
 	$.alert({
 		title: 'Báo lỗi',
@@ -236,7 +231,6 @@ function bao_loi(msg, callback = null) {
 		}
 	});
 }
-
 function do_logout() {
 	$.post(api, { action: 'logout' }, function (json) {
 		if (json.ok) {
@@ -408,7 +402,17 @@ function gen_html_list_user(json) {
 		if (json.data && json.data.length) {
 			var stt = 0;
 			for (var item of json.data) {
-				var action = 'action1'
+				var action = `
+					<div class="dropdown">
+					  <button type="button" class="btn btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+						Action ...
+					  </button>
+					  <ul class="dropdown-menu">
+						<li><a href="#" class="dropdown-item cmd-action-user" data-action="edit" data-uid='${item.uid}'>Edit ${item.name}</a></li>
+						<li><a href="#" class="dropdown-item cmd-action-user" data-action="delete" data-uid='${item.uid}'>Delete ${item.name}</a></li>
+					  </ul>
+					</div>
+				`;
 				html += '<tr>' +
 					`<td nowarp>${++stt}</th>` +
 					`<td nowarp>${item.uid}</th>` +
@@ -425,17 +429,28 @@ function gen_html_list_user(json) {
 	html += '</tbody></table></div>';
 	return html;
 }
+function edit_user(uid){
+	$.alert('code here: edit_user '+uid)
+}
+function delete_user(uid) {
+	$.alert('code here: delete_user ' + uid)
+}
 function get_list_user(dialog) {
 	$.post(api, { action: 'get_list_user', fp: setting.fp }, function (json) {
 		if (json.ok) {
 			var content = gen_html_list_user(json);
 			dialog.setContent(content);
+			$('.cmd-action-user').click(function () {
+				var action = $(this).data('action');
+				var uid = $(this).data('uid');
+				if (action == 'edit') edit_user(uid);
+				if (action == 'delete') delete_user(uid);
+			});
 		} else {
 			dialog.setContent(json.msg);
 		}
 	}, 'json');
 }
-
 function show_list_user() {
 	var content = 'Loading...'
 	var dialog_list_user = $.confirm({
